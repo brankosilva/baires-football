@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buenos Aires Football Experience</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #0F6E56;
+    --green-dark: #064535;
+    --green-light: #1D9E75;
+    --cream: #F5F0E8;
+    --black: #0A0A0A;
+    --white: #FFFFFF;
+    --accent: #E8593C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--black); color: var(--cream); font-family: 'DM Sans', sans-serif; font-weight: 300; overflow-x: hidden; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 40px;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.8) 0%, transparent 100%);
+    transition: background 0.3s;
+  }
+  nav.scrolled { background: rgba(10,10,10,0.96); }
+  .nav-brand { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.1em; color: var(--cream); opacity: 0.85; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .lang-toggle { display: flex; gap: 4px; background: rgba(255,255,255,0.08); border-radius: 20px; padding: 3px; }
+  .lang-btn { background: none; border: none; color: rgba(245,240,232,0.5); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 16px; cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; }
+  .lang-btn.active { background: var(--green); color: var(--cream); }
+  .nav-cta { background: var(--accent); color: var(--white); border: none; padding: 10px 22px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border-radius: 30px; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+  .nav-cta:hover { background: #d04830; }
+
+  .hero { min-height: 100vh; position: relative; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+  .hero-video-wrap { position: absolute; inset: 0; z-index: 0; }
+  .hero-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.25) 0%, rgba(10,10,10,0.1) 35%, rgba(10,10,10,0.6) 70%, rgba(10,10,10,0.96) 100%);
+  }
+  .hero-content { position: relative; z-index: 2; padding: 0 40px 56px; max-width: 860px; }
+  .hero-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-light); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; animation: fadeUp 0.7s 0.3s ease both; }
+  .hero-label::before { content: ''; width: 24px; height: 1px; background: var(--green-light); display: inline-block; }
+  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(58px, 10.5vw, 120px); line-height: 0.92; letter-spacing: 0.02em; color: var(--cream); margin-bottom: 22px; animation: fadeUp 0.7s 0.45s ease both; }
+  .hero-title span { color: var(--green-light); }
+  .hero-sub { font-size: clamp(14px, 1.8vw, 17px); line-height: 1.75; color: rgba(245,240,232,0.72); max-width: 520px; margin-bottom: 34px; animation: fadeUp 0.7s 0.6s ease both; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 52px; animation: fadeUp 0.7s 0.75s ease both; }
+  .btn-primary { background: var(--accent); color: var(--white); border: none; padding: 14px 28px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; border-radius: 40px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s, transform 0.15s; }
+  .btn-primary:hover { background: #d04830; transform: translateY(-2px); }
+  .btn-secondary { background: transparent; color: var(--cream); border: 1px solid rgba(245,240,232,0.28); padding: 14px 26px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 300; border-radius: 40px; cursor: pointer; text-decoration: none; transition: border-color 0.2s, transform 0.15s; }
+  .btn-secondary:hover { border-color: rgba(245,240,232,0.65); transform: translateY(-2px); }
+  .hero-stats { position: relative; z-index: 2; display: flex; gap: 44px; padding: 26px 40px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; }
+  .hero-stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--cream); letter-spacing: 0.05em; }
+  .hero-stat-label { font-size: 11px; color: rgba(245,240,232,0.38); letter-spacing: 0.05em; }
+
+  .section { padding: 96px 40px; max-width: 1100px; margin: 0 auto; }
+  .section-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-light); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .section-label::before { content: ''; width: 24px; height: 1px; background: var(--green-light); display: inline-block; }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 6vw, 68px); line-height: 1; letter-spacing: 0.02em; margin-bottom: 52px; color: var(--cream); }
+
+  .includes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; overflow: hidden; }
+  .include-card { background: var(--black); padding: 34px 26px; transition: background 0.2s; }
+  .include-card:hover { background: rgba(15,110,86,0.14); }
+  .include-icon { width: 42px; height: 42px; background: rgba(29,158,117,0.14); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+  .include-icon svg { width: 20px; height: 20px; stroke: var(--green-light); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .include-title { font-size: 15px; font-weight: 500; color: var(--cream); margin-bottom: 8px; }
+  .include-desc { font-size: 13px; color: rgba(245,240,232,0.48); line-height: 1.65; }
+
+  /* GALLERY */
+  .gallery-wrap { padding-bottom: 96px; }
+  .gallery-header { padding: 0 40px 44px; max-width: 1100px; margin: 0 auto; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 220px; gap: 4px; padding: 0 4px; }
+  .gallery-item { overflow: hidden; cursor: pointer; background: #111; position: relative; }
+  .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+  .gallery-item:nth-child(6) { grid-column: span 2; }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease, filter 0.3s; }
+  .gallery-item:hover img { transform: scale(1.05); filter: brightness(1.1); }
+  .gallery-tag { position: absolute; bottom: 12px; left: 12px; background: rgba(10,10,10,0.65); color: var(--cream); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .gallery-item:hover .gallery-tag { opacity: 1; }
+
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.94); z-index: 1000; align-items: center; justify-content: center; cursor: pointer; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 88vh; object-fit: contain; }
+  .lb-close { position: absolute; top: 18px; right: 24px; color: rgba(255,255,255,0.55); font-size: 30px; cursor: pointer; line-height: 1; }
+
+  .how-section { background: var(--green-dark); padding: 96px 40px; }
+  .how-inner { max-width: 1100px; margin: 0 auto; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-top: 52px; }
+  .step { padding: 24px 22px 24px 0; border-top: 1px solid rgba(255,255,255,0.14); }
+  .step-num { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: rgba(255,255,255,0.09); line-height: 1; margin-bottom: 10px; }
+  .step-title { font-size: 14px; font-weight: 500; color: var(--cream); margin-bottom: 7px; }
+  .step-desc { font-size: 12px; color: rgba(245,240,232,0.52); line-height: 1.65; }
+
+  .exp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 52px; }
+  .exp-card { border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 28px; background: rgba(255,255,255,0.02); transition: border-color 0.2s, background 0.2s, transform 0.2s; }
+  .exp-card:hover { border-color: rgba(29,158,117,0.4); background: rgba(15,110,86,0.1); transform: translateY(-3px); }
+  .exp-badge { display: inline-block; background: rgba(29,158,117,0.15); color: var(--green-light); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; margin-bottom: 16px; }
+  .exp-badge.hot { background: rgba(232,89,60,0.15); color: #E8593C; }
+  .exp-title { font-family: 'Bebas Neue', sans-serif; font-size: 27px; letter-spacing: 0.04em; color: var(--cream); margin-bottom: 9px; line-height: 1; }
+  .exp-desc { font-size: 13px; color: rgba(245,240,232,0.48); line-height: 1.65; margin-bottom: 18px; }
+  .exp-detail { font-size: 11px; color: rgba(245,240,232,0.3); display: flex; align-items: center; gap: 6px; }
+  .exp-detail::before { content: ''; width: 4px; height: 4px; background: var(--green-light); border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+  .faq-section { padding: 96px 40px; max-width: 740px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid rgba(255,255,255,0.08); padding: 24px 0; cursor: pointer; }
+  .faq-q { font-size: 15px; font-weight: 500; color: var(--cream); display: flex; justify-content: space-between; align-items: center; gap: 20px; user-select: none; }
+  .faq-icon { width: 22px; height: 22px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; color: rgba(245,240,232,0.4); transition: transform 0.25s, background 0.2s; line-height: 1; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); background: var(--green); border-color: var(--green); color: var(--white); }
+  .faq-a { font-size: 13.5px; color: rgba(245,240,232,0.52); line-height: 1.75; max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding-top 0.25s; }
+  .faq-item.open .faq-a { max-height: 220px; padding-top: 14px; }
+
+  .cta-section { background: var(--green); padding: 96px 40px; text-align: center; }
+  .cta-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(46px, 8vw, 92px); line-height: 0.95; letter-spacing: 0.02em; color: var(--cream); margin-bottom: 18px; }
+  .cta-sub { font-size: 16px; color: rgba(245,240,232,0.7); margin-bottom: 38px; font-weight: 300; }
+  .btn-white { background: var(--cream); color: var(--green-dark); border: none; padding: 17px 38px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; border-radius: 40px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: background 0.2s, transform 0.15s; }
+  .btn-white:hover { background: var(--white); transform: translateY(-2px); }
+
+  footer { background: var(--black); padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; gap: 10px; }
+  .footer-brand { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 0.1em; color: rgba(245,240,232,0.22); }
+  .footer-note { font-size: 12px; color: rgba(245,240,232,0.18); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 680px) {
+    nav { padding: 16px 20px; }
+    .hero-content { padding: 0 20px 36px; }
+    .hero-stats { padding: 22px 20px; gap: 24px; }
+    .section { padding: 60px 20px; }
+    .how-section { padding: 60px 20px; }
+    .faq-section { padding: 60px 20px; }
+    .cta-section { padding: 60px 20px; }
+    footer { padding: 18px 20px; }
+    .gallery-header { padding: 0 20px 32px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 160px; }
+    .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 1; }
+    .gallery-item:nth-child(6) { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <span class="nav-brand">BAIRES FOOTBALL</span>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('es')">ES</button>
+    </div>
+    <a href="#contact" class="nav-cta" id="nav-cta-text">Write me</a>
+  </div>
+</nav>
+
+<!-- HERO VIDEO -->
+<section class="hero">
+  <div class="hero-video-wrap">
+    <video autoplay muted loop playsinline>
+      <source src="/video-portada/c7eecbe8679a4e279d3145ca7a3cdcfc.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-label" id="hero-label">Buenos Aires · Argentina</div>
+    <h1 class="hero-title">
+      <span id="hero-line1">Real Football.</span>
+      <span style="color:var(--cream)" id="hero-line2">Real Passion.</span>
+    </h1>
+    <p class="hero-sub" id="hero-sub">I get tourists into real Argentine football matches — bilingual local guide, pre-match food and drinks, and ticket included. Clear planning, no stress.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span id="hero-btn1-text">Ask about this week</span>
+      </a>
+      <a href="#how" class="btn-secondary" id="hero-btn2">How it works</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num">30+</div><div class="hero-stat-label" id="stat1">Clubs in Buenos Aires</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">100%</div><div class="hero-stat-label" id="stat2">Authentic & local</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">0</div><div class="hero-stat-label" id="stat3">Tourist traps</div></div>
+  </div>
+</section>
+
+<!-- INCLUDES -->
+<section class="section">
+  <div class="section-label" id="inc-label">The experience</div>
+  <h2 class="section-title" id="inc-title">What's included</h2>
+  <div class="includes-grid">
+    <div class="include-card">
+      <div class="include-icon"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+      <div class="include-title" id="inc1-t">Match ticket</div>
+      <div class="include-desc" id="inc1-d">Entry to the selected game. We handle sourcing it — no lines, no local bank card needed.</div>
+    </div>
+    <div class="include-card">
+      <div class="include-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg></div>
+      <div class="include-title" id="inc2-t">Bilingual local guide</div>
+      <div class="include-desc" id="inc2-d">A local who knows the stadium, the history, and the chants — and keeps you safe through every checkpoint.</div>
+    </div>
+    <div class="include-card">
+      <div class="include-icon"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+      <div class="include-title" id="inc3-t">Pre-match food & drinks</div>
+      <div class="include-desc" id="inc3-d">Choripán and beer in the streets around the stadium, mixed in with real fans. This is where it starts.</div>
+    </div>
+    <div class="include-card">
+      <div class="include-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+      <div class="include-title" id="inc4-t">Full matchday planning</div>
+      <div class="include-desc" id="inc4-d">Meeting point, timing, entry guidance, and a safe exit after the game. You focus on the atmosphere.</div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<div class="gallery-wrap">
+  <div class="gallery-header">
+    <div class="section-label" id="gal-label">The atmosphere</div>
+    <h2 class="section-title" id="gal-title">This is what it looks like</h2>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item" onclick="openLb(0)">
+      <img src="/imagenes/boca-1.webp" alt="Buenos Aires football" loading="lazy">
+      <span class="gallery-tag">River Plate</span>
+    </div>
+    <div class="gallery-item" onclick="openLb(1)">
+      <img src="/imagenes/river-1.webp" alt="Estadio Argentina" loading="lazy">
+      <span class="gallery-tag">El Monumental</span>
+    </div>
+    <div class="gallery-item" onclick="openLb(2)">
+      <img src="/imagenes/racing-2.webp" alt="Hinchas argentinos" loading="lazy">
+      <span class="gallery-tag">Boca Juniors</span>
+    </div>
+    <div class="gallery-item" onclick="openLb(3)">
+      <img src="/imagenes/independiente.jpg" alt="La Bombonera" loading="lazy">
+      <span class="gallery-tag">La Bombonera</span>
+    </div>
+    <div class="gallery-item" onclick="openLb(4)">
+      <img src="/imagenes/boca-2.webp" alt="Pasión fútbol argentino" loading="lazy">
+      <span class="gallery-tag">Matchday</span>
+    </div>
+    <div class="gallery-item" onclick="openLb(5)">
+      <img src="/imagenes/river-2.jpg" alt="Estadio lleno" loading="lazy">
+      <span class="gallery-tag">The crowd</span>
+    </div>
+    <div class="gallery-item" onclick="openLb(6)">
+      <img src="/imagenes/newells-1.jpg" alt="Pre-match Buenos Aires" loading="lazy">
+      <span class="gallery-tag">Pre-match</span>
+    </div>
+    <div class="gallery-item" onclick="openLb(7)">
+      <img src="/imagenes/san-lorenzo-1.webp" alt="Fútbol Buenos Aires" loading="lazy">
+      <span class="gallery-tag">In the stands</span>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLb()">
+  <span class="lb-close">×</span>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="how-section" id="how">
+  <div class="how-inner">
+    <div class="section-label" id="how-label">The day</div>
+    <h2 class="section-title" id="how-title">What the experience looks like</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><div class="step-title" id="step1-t">Write me</div><div class="step-desc" id="step1-d">Tell me your dates and I'll send the available games that week.</div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-title" id="step2-t">Meeting point</div><div class="step-desc" id="step2-d">Two days before: exact spot and your guide's contact.</div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-title" id="step3-t">Pre-match</div><div class="step-desc" id="step3-d">Food, drinks, and real pre-game energy with locals in the streets.</div></div>
+      <div class="step"><div class="step-num">04</div><div class="step-title" id="step4-t">The match</div><div class="step-desc" id="step4-d">Inside the stadium with real fans. Your guide explains everything live.</div></div>
+      <div class="step"><div class="step-num">05</div><div class="step-title" id="step5-t">Safe exit</div><div class="step-desc" id="step5-d">After the game, the guide takes the group to a safe zone to get home.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPERIENCES -->
+<section class="section">
+  <div class="section-label" id="exp-label">Experiences</div>
+  <h2 class="section-title" id="exp-title">Choose your match</h2>
+  <div class="exp-grid">
+    <div class="exp-card">
+      <span class="exp-badge hot" id="exp-badge1">Most requested</span>
+      <div class="exp-title">Superclásico</div>
+      <div class="exp-desc" id="exp1-d">River vs Boca. The most intense derby on the planet. Limited spots — this one sells out fast.</div>
+      <div class="exp-detail" id="exp1-det">Write me for upcoming dates</div>
+    </div>
+    <div class="exp-card">
+      <span class="exp-badge" id="exp-badge2">Primera División</span>
+      <div class="exp-title">River Plate</div>
+      <div class="exp-desc" id="exp2-d">El Monumental — biggest stadium in South America. 85,000 fans, world-record atmosphere.</div>
+      <div class="exp-detail" id="exp2-det">Multiple dates each month</div>
+    </div>
+    <div class="exp-card">
+      <span class="exp-badge" id="exp-badge3">Primera División</span>
+      <div class="exp-title">Boca Juniors</div>
+      <div class="exp-desc" id="exp3-d">La Bombonera. The most iconic stadium in Argentina, with the loudest supporters in the country.</div>
+      <div class="exp-detail" id="exp3-det">Multiple dates each month</div>
+    </div>
+    <div class="exp-card">
+      <span class="exp-badge" id="exp-badge4">Barrial</span>
+      <div class="exp-title">Local derbies</div>
+      <div class="exp-desc" id="exp4-d">Neighbourhood clubs, raw passion. No tourists — just the real Buenos Aires football culture.</div>
+      <div class="exp-detail" id="exp4-det">Every weekend — ask me what's on</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="section-label" id="faq-label">FAQ</div>
+  <h2 class="section-title" id="faq-title">Common questions</h2>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span id="faq1-q">Is it safe?</span><span class="faq-icon">+</span></div><div class="faq-a" id="faq1-a">Yes. You're always in a group with an experienced bilingual guide who has been to dozens of these matches. They handle all security checkpoints, entry, and the exit — you never have to figure anything out alone.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span id="faq2-q">Do I need to speak Spanish?</span><span class="faq-icon">+</span></div><div class="faq-a" id="faq2-a">Not at all. Your bilingual guide handles everything and explains the history, the chants, and the context throughout the day.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span id="faq3-q">What if I know nothing about football?</span><span class="faq-icon">+</span></div><div class="faq-a" id="faq3-a">No problem. This is a cultural experience first. Many guests have never watched a match before and still say it was the highlight of their whole trip.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span id="faq4-q">How do I find out what's on?</span><span class="faq-icon">+</span></div><div class="faq-a" id="faq4-a">Write me and tell me your dates in Buenos Aires. Argentine football fixtures are confirmed 1–2 weeks in advance — I'll check what's available and send you the options.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span id="faq5-q">What should I bring?</span><span class="faq-icon">+</span></div><div class="faq-a" id="faq5-a">National photo ID (not a screenshot), casual comfortable clothing, and some cash for extras. No bags, power banks, water bottles, or umbrellas — these get confiscated at the entrance.</div></div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <h2 class="cta-title" id="cta-title">Ready to go<br>to a match?</h2>
+  <p class="cta-sub" id="cta-sub">Write me and I'll tell you what's on this week.</p>
+  <a href="https://wa.me/5491173735757" class="btn-white" target="_blank">
+    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+    <span id="cta-btn">Write me on WhatsApp</span>
+  </a>
+</section>
+
+<footer>
+  <span class="footer-brand">BAIRES FOOTBALL</span>
+  <span class="footer-note" id="footer-note">Football experiences in Buenos Aires</span>
+</footer>
+
+<script>
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+function toggleFaq(el) {
+  const was = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!was) el.classList.add('open');
+}
+
+const imgs = Array.from(document.querySelectorAll('.gallery-item img')).map(i => i.src);
+function openLb(i) { document.getElementById('lb-img').src = imgs[i]; document.getElementById('lightbox').classList.add('open'); }
+function closeLb() { document.getElementById('lightbox').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+
+const T = {
+  en: {
+    'nav-cta-text':'Write me','hero-label':'Buenos Aires · Argentina','hero-line1':'Real Football.','hero-line2':'Real Passion.',
+    'hero-sub':'I get tourists into real Argentine football matches — bilingual local guide, pre-match food and drinks, and ticket included. Clear planning, no stress.',
+    'hero-btn1-text':'Ask about this week','hero-btn2':'How it works',
+    'stat1':'Clubs in Buenos Aires','stat2':'Authentic & local','stat3':'Tourist traps',
+    'inc-label':'The experience','inc-title':"What's included",
+    'inc1-t':'Match ticket','inc1-d':"Entry to the selected game. We handle sourcing it — no lines, no local bank card needed.",
+    'inc2-t':'Bilingual local guide','inc2-d':"A local who knows the stadium, the history, and the chants — and keeps you safe through every checkpoint.",
+    'inc3-t':'Pre-match food & drinks','inc3-d':"Choripán and beer in the streets around the stadium, mixed in with real fans. This is where it starts.",
+    'inc4-t':'Full matchday planning','inc4-d':"Meeting point, timing, entry guidance, and a safe exit after the game. You focus on the atmosphere.",
+    'gal-label':'The atmosphere','gal-title':'This is what it looks like',
+    'how-label':'The day','how-title':'What the experience looks like',
+    'step1-t':'Write me','step1-d':"Tell me your dates and I'll send the available games that week.",
+    'step2-t':'Meeting point','step2-d':"Two days before: exact spot and your guide's contact.",
+    'step3-t':'Pre-match','step3-d':'Food, drinks, and real pre-game energy with locals in the streets.',
+    'step4-t':'The match','step4-d':'Inside the stadium with real fans. Your guide explains everything live.',
+    'step5-t':'Safe exit','step5-d':'After the game, the guide takes the group to a safe zone to get home.',
+    'exp-label':'Experiences','exp-title':'Choose your match',
+    'exp-badge1':'Most requested','exp1-d':'River vs Boca. The most intense derby on the planet. Limited spots — this one sells out fast.','exp1-det':'Write me for upcoming dates',
+    'exp-badge2':'Primera División','exp2-d':'El Monumental — biggest stadium in South America. 85,000 fans, world-record atmosphere.','exp2-det':'Multiple dates each month',
+    'exp-badge3':'Primera División','exp3-d':'La Bombonera. The most iconic stadium in Argentina, with the loudest supporters in the country.','exp3-det':'Multiple dates each month',
+    'exp-badge4':'Barrial','exp4-d':'Neighbourhood clubs, raw passion. No tourists — just the real Buenos Aires football culture.','exp4-det':"Every weekend — ask me what's on",
+    'faq-label':'FAQ','faq-title':'Common questions',
+    'faq1-q':'Is it safe?','faq1-a':"Yes. You're always in a group with an experienced bilingual guide. They handle all security checkpoints, entry, and the exit — you never figure anything out alone.",
+    'faq2-q':'Do I need to speak Spanish?','faq2-a':"Not at all. Your bilingual guide handles everything and explains the history, the chants, and the context throughout the day.",
+    'faq3-q':'What if I know nothing about football?','faq3-a':"No problem. Many guests have never watched a match before and still say it was the highlight of their trip.",
+    'faq4-q':"How do I find out what's on?",'faq4-a':"Write me and tell me your dates. Argentine fixtures are confirmed 1–2 weeks in advance — I'll check and send you the options.",
+    'faq5-q':'What should I bring?','faq5-a':"National photo ID (not a screenshot), casual clothes, and some cash. No bags, power banks, water bottles, or umbrellas — confiscated at the entrance.",
+    'cta-title':'Ready to go<br>to a match?','cta-sub':"Write me and I'll tell you what's on this week.",
+    'cta-btn':'Write me on WhatsApp','footer-note':'Football experiences in Buenos Aires',
+  },
+  es: {
+    'nav-cta-text':'Escribime','hero-label':'Buenos Aires · Argentina','hero-line1':'Fútbol real.','hero-line2':'Pasión real.',
+    'hero-sub':'Te consigo entrada a partidos de fútbol argentino — guía local bilingüe, previa con comida y bebida incluida. Todo coordinado, sin vueltas.',
+    'hero-btn1-text':'¿Qué hay esta semana?','hero-btn2':'Cómo funciona',
+    'stat1':'Clubes en Buenos Aires','stat2':'Auténtico y local','stat3':'Trampas turísticas',
+    'inc-label':'La experiencia','inc-title':'Qué incluye',
+    'inc1-t':'Entrada al partido','inc1-d':'Entrada al partido elegido. Nosotros la conseguimos — sin filas, sin tarjeta local.',
+    'inc2-t':'Guía local bilingüe','inc2-d':'Un local que conoce el estadio, la historia y los cánticos. Y que te cuida en cada control.',
+    'inc3-t':'Previa con comida y bebida','inc3-d':'Choripán y birra en las calles del barrio del estadio, mezclados con hinchas de verdad.',
+    'inc4-t':'Planificación del día','inc4-d':'Punto de encuentro, horarios, cómo entrar y salida segura. Vos solo disfrutás.',
+    'gal-label':'El ambiente','gal-title':'Así es la experiencia',
+    'how-label':'El día','how-title':'Cómo es la experiencia',
+    'step1-t':'Me escribís','step1-d':'Me contás tus fechas y te mando los partidos disponibles esa semana.',
+    'step2-t':'Punto de encuentro','step2-d':'Dos días antes: el lugar exacto y el contacto de tu guía.',
+    'step3-t':'La previa','step3-d':'Comida, bebida y ambiente real con locales en las calles del estadio.',
+    'step4-t':'El partido','step4-d':'Adentro del estadio con hinchas de verdad. El guía te explica todo en vivo.',
+    'step5-t':'Salida segura','step5-d':'Al terminar, el guía lleva al grupo a una zona segura para volver fácil.',
+    'exp-label':'Experiencias','exp-title':'Elegí tu partido',
+    'exp-badge1':'El más pedido','exp1-d':'River vs Boca. El clásico más intenso del planeta. Disponibilidad limitada — se agota rápido.','exp1-det':'Escribime para ver próximas fechas',
+    'exp-badge2':'Primera División','exp2-d':'El Monumental — el estadio más grande de Sudamérica. 85.000 hinchas, récord mundial.','exp2-det':'Varias fechas disponibles cada mes',
+    'exp-badge3':'Primera División','exp3-d':'La Bombonera. El estadio más icónico de Argentina, con los hinchas más ruidosos del país.','exp3-det':'Varias fechas disponibles cada mes',
+    'exp-badge4':'Liga barrial','exp4-d':'Clubes de barrio, pasión sin filtro. Sin turistas — la cultura futbolera real de Buenos Aires.','exp4-det':'Todos los fines de semana — preguntame',
+    'faq-label':'Preguntas','faq-title':'Preguntas frecuentes',
+    'faq1-q':'¿Es seguro?','faq1-a':'Sí. Siempre van en grupo con un guía bilingüe experimentado. Él maneja todos los controles, la entrada y la salida — nunca tenés que resolver nada solo.',
+    'faq2-q':'¿Necesito hablar español?','faq2-a':'Para nada. El guía se encarga de todo y te explica la historia, los cánticos y el contexto durante todo el día.',
+    'faq3-q':'¿Y si no sé nada de fútbol?','faq3-a':'Sin problema. Muchos huéspedes nunca habían visto un partido y igual dicen que fue lo mejor de su viaje.',
+    'faq4-q':'¿Cómo sé qué partidos hay?','faq4-a':'Escribime y contame tus fechas. El fútbol argentino confirma los partidos 1-2 semanas antes — me fijo y te mando las opciones.',
+    'faq5-q':'¿Qué tengo que llevar?','faq5-a':'Documento físico (no screenshot), ropa cómoda y efectivo para extras. Sin bolsos, powerbanks, botellas ni paraguas — los confiscan en la entrada.',
+    'cta-title':'¿Listo para ir<br>a un partido?','cta-sub':'Escribime y te cuento qué hay esta semana.',
+    'cta-btn':'Escribime por WhatsApp','footer-note':'Experiencias de fútbol en Buenos Aires',
+  }
+};
+
+function setLang(lang) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
+  Object.entries(T[lang]).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  });
+}
+</script>
+</body>
+</html>
