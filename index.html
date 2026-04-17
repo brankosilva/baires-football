@@ -124,6 +124,29 @@
   .footer-brand { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 0.1em; color: rgba(245,240,232,0.22); }
   .footer-note { font-size: 12px; color: rgba(245,240,232,0.18); }
 
+  /* BOOKING FORM */
+  .booking-section { background: var(--green-dark); padding: 96px 40px; }
+  .booking-inner { max-width: 640px; margin: 0 auto; }
+  .book-sub { font-size: 15px; color: rgba(245,240,232,0.6); line-height: 1.75; margin-bottom: 44px; font-weight: 300; }
+  .book-form { display: flex; flex-direction: column; gap: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 7px; }
+  .form-group label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245,240,232,0.45); }
+  .form-group input, .form-group select {
+    background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+    padding: 13px 16px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    font-weight: 300; outline: none; transition: border-color 0.2s, background 0.2s; width: 100%;
+  }
+  .form-group input::placeholder { color: rgba(245,240,232,0.22); }
+  .form-group input:focus, .form-group select:focus { border-color: var(--green-light); background: rgba(0,0,0,0.4); }
+  .form-group select {
+    appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 38px; color-scheme: dark;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(245,240,232,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; background-size: 12px;
+  }
+  .form-group select option { background: #0a1f18; color: var(--cream); }
+  .book-submit { width: 100%; justify-content: center; padding: 16px 28px; font-size: 15px; margin-top: 4px; }
+
   @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
 
   @media (max-width: 680px) {
@@ -139,6 +162,8 @@
     .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 160px; }
     .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 1; }
     .gallery-item:nth-child(6) { grid-column: span 1; }
+    .booking-section { padding: 60px 20px; }
+    .form-row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -318,14 +343,43 @@
   <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q"><span id="faq5-q">What should I bring?</span><span class="faq-icon">+</span></div><div class="faq-a" id="faq5-a">National photo ID (not a screenshot), casual comfortable clothing, and some cash for extras. No bags, power banks, water bottles, or umbrellas — these get confiscated at the entrance.</div></div>
 </section>
 
-<!-- CTA -->
-<section class="cta-section" id="contact">
-  <h2 class="cta-title" id="cta-title">Ready to go<br>to a match?</h2>
-  <p class="cta-sub" id="cta-sub">Write me and I'll tell you what's on this week.</p>
-  <a href="https://wa.me/5491173735757" class="btn-white" target="_blank">
-    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-    <span id="cta-btn">Write me on WhatsApp</span>
-  </a>
+<!-- BOOKING FORM -->
+<section class="booking-section" id="contact">
+  <div class="booking-inner">
+    <div class="section-label" id="book-label">Contact</div>
+    <h2 class="section-title" id="book-title">Get in touch</h2>
+    <p class="book-sub" id="book-sub">Send me your details and I'll get back to you on WhatsApp with everything you need to know.</p>
+    <form class="book-form" id="bookingForm" onsubmit="submitBooking(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fname" id="label-fname">Full name</label>
+          <input type="text" id="fname" required placeholder="John Smith">
+        </div>
+        <div class="form-group">
+          <label for="femail" id="label-email">Email</label>
+          <input type="email" id="femail" required placeholder="john@email.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fphone" id="label-phone">Phone / WhatsApp</label>
+          <input type="tel" id="fphone" placeholder="+1 555 000 0000">
+        </div>
+        <div class="form-group">
+          <label for="fteam" id="label-team">Team you'd like to see</label>
+          <input type="text" id="fteam" placeholder="e.g. Boca Juniors, River Plate…">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="fdate" id="label-date">Match date</label>
+        <input type="date" id="fdate" required>
+      </div>
+      <button type="submit" class="btn-primary book-submit">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+        <span id="book-submit-text">Send via WhatsApp</span>
+      </button>
+    </form>
+  </div>
 </section>
 
 <footer>
@@ -378,8 +432,12 @@ const T = {
     'faq3-q':'What if I know nothing about football?','faq3-a':"No problem. Many guests have never watched a match before and still say it was the highlight of their trip.",
     'faq4-q':"How do I find out what's on?",'faq4-a':"Write me and tell me your dates. Argentine fixtures are confirmed 1–2 weeks in advance — I'll check and send you the options.",
     'faq5-q':'What should I bring?','faq5-a':"National photo ID (not a screenshot), casual clothes, and some cash. No bags, power banks, water bottles, or umbrellas — confiscated at the entrance.",
-    'cta-title':'Ready to go<br>to a match?','cta-sub':"Write me and I'll tell you what's on this week.",
-    'cta-btn':'Write me on WhatsApp','footer-note':'Football experiences in Buenos Aires',
+    'book-label':'Contact','book-title':'Get in touch',
+    'book-sub':"Send me your details and I'll get back to you on WhatsApp with everything you need to know.",
+    'label-fname':'Full name','label-email':'Email','label-phone':'Phone / WhatsApp',
+    'label-team':'Team you\'d like to see','label-date':'Match date',
+    'book-submit-text':'Send via WhatsApp',
+    'footer-note':'Football experiences in Buenos Aires',
   },
   es: {
     'nav-cta-text':'Escribime','hero-label':'Buenos Aires · Argentina','hero-line1':'Fútbol real.','hero-line2':'Pasión real.',
@@ -409,10 +467,31 @@ const T = {
     'faq3-q':'¿Y si no sé nada de fútbol?','faq3-a':'Sin problema. Muchos huéspedes nunca habían visto un partido y igual dicen que fue lo mejor de su viaje.',
     'faq4-q':'¿Cómo sé qué partidos hay?','faq4-a':'Escribime y contame tus fechas. El fútbol argentino confirma los partidos 1-2 semanas antes — me fijo y te mando las opciones.',
     'faq5-q':'¿Qué tengo que llevar?','faq5-a':'Documento físico (no screenshot), ropa cómoda y efectivo para extras. Sin bolsos, powerbanks, botellas ni paraguas — los confiscan en la entrada.',
-    'cta-title':'¿Listo para ir<br>a un partido?','cta-sub':'Escribime y te cuento qué hay esta semana.',
-    'cta-btn':'Escribime por WhatsApp','footer-note':'Experiencias de fútbol en Buenos Aires',
+    'book-label':'Contacto','book-title':'Escribime',
+    'book-sub':'Mandame tus datos y te respondo por WhatsApp con todo lo que necesitás saber.',
+    'label-fname':'Nombre completo','label-email':'Email','label-phone':'Teléfono / WhatsApp',
+    'label-team':'Equipo que querés ver','label-date':'Fecha del partido',
+    'book-submit-text':'Enviar por WhatsApp',
+    'footer-note':'Experiencias de fútbol en Buenos Aires',
   }
 };
+
+function submitBooking(e) {
+  e.preventDefault();
+  const name  = document.getElementById('fname').value.trim();
+  const email = document.getElementById('femail').value.trim();
+  const phone = document.getElementById('fphone').value.trim();
+  const team  = document.getElementById('fteam').value.trim();
+  const raw   = document.getElementById('fdate').value;
+  const date  = raw ? new Date(raw + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+  const isES  = document.querySelector('.lang-btn.active').textContent === 'ES';
+
+  const msg = isES
+    ? `Hola! Me gustaría ir a un partido.\n\nNombre: ${name}\nEmail: ${email}\nTeléfono: ${phone || '—'}\nEquipo: ${team || '—'}\nFecha del partido: ${date}`
+    : `Hi! I'd like to go to a match.\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || '—'}\nTeam: ${team || '—'}\nMatch date: ${date}`;
+
+  window.open('https://wa.me/5491173735757?text=' + encodeURIComponent(msg), '_blank');
+}
 
 function setLang(lang) {
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
