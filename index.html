@@ -146,6 +146,27 @@
   }
   .form-group select option { background: #0a1f18; color: var(--cream); }
   .book-submit { width: 100%; justify-content: center; padding: 16px 28px; font-size: 15px; margin-top: 4px; }
+  .date-picker-wrap { position: relative; }
+  #fdate-display { cursor: pointer; }
+  .cal-popup {
+    display: none; position: absolute; top: calc(100% + 8px); left: 0; z-index: 200;
+    background: #0d2218; border: 1px solid rgba(255,255,255,0.14); border-radius: 14px;
+    padding: 18px; width: 288px; box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  .cal-popup.open { display: block; }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .cal-header button { background: none; border: none; color: rgba(245,240,232,0.55); font-size: 22px; cursor: pointer; padding: 2px 10px; border-radius: 6px; line-height: 1; transition: background 0.15s, color 0.15s; }
+  .cal-header button:hover { background: rgba(255,255,255,0.08); color: var(--cream); }
+  .cal-month-label { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 0.08em; color: var(--cream); }
+  .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 6px; }
+  .cal-weekday { text-align: center; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(245,240,232,0.3); padding: 4px 0; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-day { text-align: center; padding: 7px 2px; font-size: 13px; color: rgba(245,240,232,0.65); border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s; user-select: none; }
+  .cal-day:hover { background: rgba(29,158,117,0.22); color: var(--cream); }
+  .cal-day.selected { background: var(--green); color: var(--white); font-weight: 500; }
+  .cal-day.today { outline: 1px solid rgba(29,158,117,0.5); }
+  .cal-day.other-month { color: rgba(245,240,232,0.18); cursor: default; }
+  .cal-day.other-month:hover { background: none; }
 
   @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -372,7 +393,22 @@
       </div>
       <div class="form-group">
         <label for="fdate" id="label-date">Match date</label>
-        <input type="date" id="fdate" required onkeydown="return false">
+        <div class="date-picker-wrap">
+          <input type="text" id="fdate-display" readonly required placeholder="Select a date" onclick="toggleCal(event)">
+          <input type="hidden" id="fdate">
+          <div class="cal-popup" id="calPopup">
+            <div class="cal-header">
+              <button type="button" onclick="changeMonth(-1)">&#8249;</button>
+              <span id="cal-month-label" class="cal-month-label"></span>
+              <button type="button" onclick="changeMonth(1)">&#8250;</button>
+            </div>
+            <div class="cal-weekdays">
+              <div class="cal-weekday">Mo</div><div class="cal-weekday">Tu</div><div class="cal-weekday">We</div>
+              <div class="cal-weekday">Th</div><div class="cal-weekday">Fr</div><div class="cal-weekday">Sa</div><div class="cal-weekday">Su</div>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+        </div>
       </div>
       <button type="submit" class="btn-primary book-submit">
         <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
@@ -476,14 +512,70 @@ const T = {
   }
 };
 
+const CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const calState = { year: new Date().getFullYear(), month: new Date().getMonth(), selected: null };
+
+function toggleCal(e) {
+  e.stopPropagation();
+  const popup = document.getElementById('calPopup');
+  if (popup.classList.contains('open')) { popup.classList.remove('open'); return; }
+  renderCal();
+  popup.classList.add('open');
+}
+function changeMonth(dir) {
+  calState.month += dir;
+  if (calState.month > 11) { calState.month = 0; calState.year++; }
+  if (calState.month < 0) { calState.month = 11; calState.year--; }
+  renderCal();
+}
+function renderCal() {
+  const { year, month, selected } = calState;
+  document.getElementById('cal-month-label').textContent = CAL_MONTHS[month] + ' ' + year;
+  const startDay = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
+  const today = new Date();
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  for (let i = startDay - 1; i >= 0; i--) {
+    const d = document.createElement('div');
+    d.className = 'cal-day other-month';
+    d.textContent = daysInPrev - i;
+    grid.appendChild(d);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if (selected === iso) el.classList.add('selected');
+    if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) el.classList.add('today');
+    el.textContent = d;
+    el.onclick = (e) => { e.stopPropagation(); selectDay(iso, d, month, year); };
+    grid.appendChild(el);
+  }
+  const trailing = 7 - ((startDay + daysInMonth) % 7 || 7);
+  for (let d = 1; d <= trailing; d++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day other-month';
+    el.textContent = d;
+    grid.appendChild(el);
+  }
+}
+function selectDay(iso, day, month, year) {
+  calState.selected = iso;
+  document.getElementById('fdate').value = iso;
+  document.getElementById('fdate-display').value = `${day} ${CAL_MONTHS[month]} ${year}`;
+  document.getElementById('calPopup').classList.remove('open');
+}
+document.addEventListener('click', () => { const p = document.getElementById('calPopup'); if (p) p.classList.remove('open'); });
+
 function submitBooking(e) {
   e.preventDefault();
   const name  = document.getElementById('fname').value.trim();
   const email = document.getElementById('femail').value.trim();
   const phone = document.getElementById('fphone').value.trim();
   const team  = document.getElementById('fteam').value.trim();
-  const raw   = document.getElementById('fdate').value;
-  const date  = raw ? new Date(raw + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+  const date  = document.getElementById('fdate-display').value || '—';
   const isES  = document.querySelector('.lang-btn.active').textContent === 'ES';
 
   const msg = isES
