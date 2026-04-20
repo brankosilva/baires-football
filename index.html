@@ -168,8 +168,83 @@
   .cal-day.other-month { color: rgba(245,240,232,0.18); cursor: default; }
   .cal-day.other-month:hover { background: none; }
 
+  /* ============================================================
+     MATCHES SECTION
+  ============================================================ */
+  .matches-section { padding: 96px 0; background: var(--black); border-top: 1px solid rgba(255,255,255,0.06); }
+  .matches-inner { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+  .tournament-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; scrollbar-width: none; }
+  .tournament-tabs::-webkit-scrollbar { display: none; }
+  .t-tab { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); color: rgba(245,240,232,0.48); border-radius: 30px; padding: 8px 18px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; letter-spacing: 0.03em; }
+  .t-tab:hover { background: rgba(255,255,255,0.08); color: var(--cream); }
+  .t-tab.active { background: var(--green); border-color: var(--green); color: var(--cream); }
+
+  .team-filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; }
+  .team-search { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 30px; padding: 8px 18px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 12px; outline: none; min-width: 200px; transition: border-color 0.2s; }
+  .team-search::placeholder { color: rgba(245,240,232,0.28); }
+  .team-search:focus { border-color: rgba(29,158,117,0.45); }
+
+  .matches-layout { display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: start; }
+
+  .mini-cal { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; position: sticky; top: 84px; }
+  .mini-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .mini-cal-nav { background: none; border: none; color: rgba(245,240,232,0.4); font-size: 20px; cursor: pointer; padding: 3px 8px; border-radius: 6px; transition: all 0.15s; line-height: 1; }
+  .mini-cal-nav:hover { background: rgba(255,255,255,0.07); color: var(--cream); }
+  .mini-cal-month { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 0.06em; color: var(--cream); }
+  .mini-cal-wds { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+  .mini-cal-wd { text-align: center; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(245,240,232,0.22); padding: 5px 0; }
+  .mini-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .mc-day { position: relative; text-align: center; padding: 6px 2px 5px; font-size: 11px; color: rgba(245,240,232,0.45); border-radius: 6px; cursor: pointer; transition: all 0.15s; user-select: none; line-height: 1.3; }
+  .mc-day:hover:not(.mc-other) { background: rgba(29,158,117,0.16); color: var(--cream); }
+  .mc-day.mc-other { color: rgba(245,240,232,0.12); cursor: default; }
+  .mc-day.mc-today { outline: 1px solid rgba(29,158,117,0.4); color: var(--cream); }
+  .mc-day.mc-has { color: var(--cream); font-weight: 500; }
+  .mc-day.mc-has::after { content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 3px; height: 3px; background: var(--green-light); border-radius: 50%; }
+  .mc-day.mc-sel { background: var(--green) !important; color: var(--white) !important; }
+  .mc-day.mc-sel::after { background: rgba(255,255,255,0.65); }
+  .mc-legend { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 7px; font-size: 11px; color: rgba(245,240,232,0.35); }
+  .mc-legend-dot { width: 5px; height: 5px; background: var(--green-light); border-radius: 50%; flex-shrink: 0; }
+  .mc-clear { background: none; border: none; color: rgba(245,240,232,0.28); font-family: 'DM Sans', sans-serif; font-size: 11px; cursor: pointer; margin-left: auto; padding: 2px 6px; border-radius: 4px; transition: color 0.15s; }
+  .mc-clear:hover { color: var(--cream); }
+
+  .matches-list { min-height: 260px; }
+  .match-list-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 22px; }
+  .match-list-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 0.04em; color: var(--cream); }
+  .match-count { font-size: 11px; color: rgba(245,240,232,0.3); letter-spacing: 0.06em; }
+
+  .matches-group { margin-bottom: 32px; }
+  .mg-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green-light); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .mg-label::before { content: ''; width: 16px; height: 1px; background: var(--green-light); }
+
+  .match-card { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px 20px; margin-bottom: 7px; gap: 12px; transition: background 0.2s, border-color 0.2s; }
+  .match-card:hover { background: rgba(15,110,86,0.09); border-color: rgba(29,158,117,0.22); }
+  .match-team { display: flex; align-items: center; gap: 10px; }
+  .match-team.away { flex-direction: row-reverse; }
+  .match-logo { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.05); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .match-logo img { width: 26px; height: 26px; object-fit: contain; }
+  .match-tname { font-size: 13px; font-weight: 500; color: var(--cream); line-height: 1.25; }
+  .match-team.away .match-tname { text-align: right; }
+  .match-mid { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+  .match-vs { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 0.12em; color: rgba(245,240,232,0.25); }
+  .match-time { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.04em; color: var(--cream); line-height: 1; }
+  .match-date-tag { font-size: 10px; color: rgba(245,240,232,0.3); letter-spacing: 0.04em; white-space: nowrap; }
+  .match-venue-pill { font-size: 10px; color: rgba(245,240,232,0.32); background: rgba(255,255,255,0.04); padding: 3px 9px; border-radius: 20px; white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .match-book-row { grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 4px; }
+  .match-book-btn { background: var(--accent); color: var(--white); border: none; border-radius: 30px; padding: 7px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: none; transition: background 0.2s, transform 0.15s; display: inline-block; }
+  .match-book-btn:hover { background: #d04830; transform: translateY(-1px); }
+
+  .matches-loading { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 60px 0; }
+  .spinner { width: 28px; height: 28px; border: 2px solid rgba(255,255,255,0.09); border-top-color: var(--green-light); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .matches-empty { text-align: center; padding: 52px 20px; color: rgba(245,240,232,0.28); font-size: 13px; line-height: 1.7; }
+
   @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
 
+  @media (max-width: 860px) {
+    .matches-layout { grid-template-columns: 1fr; }
+    .mini-cal { position: static; }
+  }
   @media (max-width: 680px) {
     nav { padding: 16px 20px; }
     .hero-content { padding: 0 20px 36px; }
@@ -185,6 +260,8 @@
     .gallery-item:nth-child(6) { grid-column: span 1; }
     .booking-section { padding: 60px 20px; }
     .form-row { grid-template-columns: 1fr; }
+    .matches-inner { padding: 0 20px; }
+    .matches-section { padding: 60px 0; }
   }
 </style>
 </head>
@@ -353,6 +430,57 @@
   </div>
 </section>
 
+<!-- MATCHES CALENDAR -->
+<section class="matches-section" id="matches">
+  <div class="matches-inner">
+    <div class="section-label" id="match-sec-label">Live schedule</div>
+    <h2 class="section-title" id="match-sec-title">Upcoming matches</h2>
+
+    <div class="tournament-tabs">
+      <button class="t-tab active" data-league="all" onclick="setLeague('all',this)" id="tab-all">All tournaments</button>
+      <button class="t-tab" data-league="arg.1" onclick="setLeague('arg.1',this)">Liga Profesional</button>
+      <button class="t-tab" data-league="conmebol.libertadores" onclick="setLeague('conmebol.libertadores',this)">Copa Libertadores</button>
+      <button class="t-tab" data-league="conmebol.sudamericana" onclick="setLeague('conmebol.sudamericana',this)">Copa Sudamericana</button>
+    </div>
+
+    <div class="team-filter-row">
+      <input type="text" class="team-search" id="team-search-input" placeholder="Filter by team…" oninput="setTeamFilter(this.value)">
+    </div>
+
+    <div class="matches-layout">
+      <div class="mini-cal">
+        <div class="mini-cal-header">
+          <button class="mini-cal-nav" onclick="mcChangeMonth(-1)">&#8249;</button>
+          <span class="mini-cal-month" id="mc-month-label"></span>
+          <button class="mini-cal-nav" onclick="mcChangeMonth(1)">&#8250;</button>
+        </div>
+        <div class="mini-cal-wds">
+          <div class="mini-cal-wd">Mo</div><div class="mini-cal-wd">Tu</div><div class="mini-cal-wd">We</div>
+          <div class="mini-cal-wd">Th</div><div class="mini-cal-wd">Fr</div><div class="mini-cal-wd">Sa</div><div class="mini-cal-wd">Su</div>
+        </div>
+        <div class="mini-cal-grid" id="mc-grid"></div>
+        <div class="mc-legend">
+          <span class="mc-legend-dot"></span>
+          <span id="mc-legend-text">Match day</span>
+          <button class="mc-clear" id="mc-clear-btn" onclick="clearDateSel()" style="display:none">Clear</button>
+        </div>
+      </div>
+
+      <div class="matches-list">
+        <div class="match-list-header">
+          <span class="match-list-title" id="match-list-title"></span>
+          <span class="match-count" id="match-count"></span>
+        </div>
+        <div class="matches-loading" id="match-loading" style="display:none">
+          <div class="spinner"></div>
+          <span style="font-size:12px;color:rgba(245,240,232,0.35)" id="match-loading-text">Loading fixtures…</span>
+        </div>
+        <div id="match-content"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FAQ -->
 <section class="faq-section">
   <div class="section-label" id="faq-label">FAQ</div>
@@ -439,6 +567,282 @@ function openLb(i) { document.getElementById('lb-img').src = imgs[i]; document.g
 function closeLb() { document.getElementById('lightbox').classList.remove('open'); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
 
+/* ============================================================
+   MATCHES SECTION — ESPN public API (no key, no registration)
+   Slugs: arg.1 · conmebol.libertadores · conmebol.sudamericana
+============================================================ */
+const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer';
+
+const LEAGUE_META = {
+  'arg.1':                 { name: 'Liga Profesional',  nameEs: 'Liga Profesional',  domestic: true  },
+  'conmebol.libertadores': { name: 'Copa Libertadores', nameEs: 'Copa Libertadores', domestic: false },
+  'conmebol.sudamericana': { name: 'Copa Sudamericana', nameEs: 'Copa Sudamericana', domestic: false },
+};
+
+/* Buenos Aires venue detection */
+const BA_VENUE_KEYS = [
+  'bombonera','monumental','bidegain','cilindro','libertadores de am',
+  'duco','palacio','amalfitani','fortín','fortin','hirschi','estadio uno',
+  'nestor diaz','néstor díaz','maradona','zerillo','bosque',
+  'tomaghello','florencio sol','dellagiovanna','coloso','bielsa',
+  'gigante','arroyito','gasometro','chiqui tapia'
+];
+const BA_CITIES = [
+  'buenos aires','avellaneda','lanus','lanús','la plata',
+  'quilmes','banfield','florencio varela','tigre','hurlingham',
+  'lomas de zamora','san justo','morón','moron'
+];
+
+function isBAVenue(venue, isDomestic) {
+  const name = (venue?.fullName || '').toLowerCase();
+  const city = (venue?.address?.city || '').toLowerCase();
+  if (BA_CITIES.some(c => city.includes(c))) return true;
+  if (BA_VENUE_KEYS.some(k => name.includes(k)))   return true;
+  /* For domestic Argentine leagues: include if country is Argentina
+     and city is not a known non-BA capital */
+  if (isDomestic && (venue?.address?.country || '') === 'Argentina') {
+    const excluded = ['rosario','córdoba','cordoba','mendoza','tucumán','tucuman',
+      'salta','santa fe','santiago del estero','san juan','mar del plata',
+      'neuquén','neuquen','resistencia','corrientes','posadas','paraná','parana'];
+    return !excluded.some(c => city.includes(c));
+  }
+  return false;
+}
+
+/* Normalise one ESPN event into a flat object */
+function normalizeEspnEvent(e, slug) {
+  const comp = e.competitions[0];
+  const home = comp.competitors.find(c => c.homeAway === 'home') || comp.competitors[0];
+  const away = comp.competitors.find(c => c.homeAway === 'away') || comp.competitors[1];
+  return {
+    _lid:       slug,
+    _date:      e.date,
+    _home:      home?.team?.displayName || '—',
+    _away:      away?.team?.displayName || '—',
+    _homeLogo:  home?.team?.logo || '',
+    _awayLogo:  away?.team?.logo || '',
+    _homeScore: home?.score ?? '',
+    _awayScore: away?.score ?? '',
+    _venue:     comp.venue?.fullName || '',
+    _city:      comp.venue?.address?.city || '',
+    _country:   comp.venue?.address?.country || '',
+    _state:     comp.status?.type?.state || 'pre',      // pre · in · post
+    _completed: comp.status?.type?.completed || false,
+  };
+}
+
+/* Match state */
+const MS = {
+  fixtures: {}, loading: false,
+  calYear: new Date().getFullYear(), calMonth: new Date().getMonth(),
+  selDate: null, league: 'all', teamQ: '',
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderMC(); renderMatchList();
+  loadFixtures();
+});
+
+async function loadFixtures() {
+  MS.loading = true; showMatchLoading(true);
+  const now  = new Date();
+  const from = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const end  = new Date(now); end.setMonth(end.getMonth() + 3);
+  const to   = end.toISOString().slice(0, 10).replace(/-/g, '');
+  await Promise.all(Object.keys(LEAGUE_META).map(slug => fetchLeague(slug, from, to)));
+  MS.loading = false; showMatchLoading(false);
+  renderMC(); renderMatchList();
+}
+
+async function fetchLeague(slug, from, to) {
+  const ckey = `espn_${slug}_${from}`;
+  const cached = sessionStorage.getItem(ckey);
+  if (cached) { MS.fixtures[slug] = JSON.parse(cached); return; }
+  try {
+    const url  = `${ESPN}/${slug}/scoreboard?dates=${from}-${to}&limit=200`;
+    const res  = await fetch(url);
+    const json = await res.json();
+    const isDom = LEAGUE_META[slug].domestic;
+    const filtered = (json.events || [])
+      .filter(e => {
+        const comp = e.competitions?.[0];
+        return comp && isBAVenue(comp.venue, isDom);
+      })
+      .map(e => normalizeEspnEvent(e, slug));
+    MS.fixtures[slug] = filtered;
+    if (filtered.length) sessionStorage.setItem(ckey, JSON.stringify(filtered));
+  } catch(err) { MS.fixtures[slug] = []; }
+}
+
+function showMatchLoading(show) {
+  document.getElementById('match-loading').style.display = show ? 'flex'  : 'none';
+  document.getElementById('match-content').style.display = show ? 'none'  : 'block';
+}
+
+/* Convert UTC ISO date to Buenos Aires local Date object */
+function toBADate(iso) {
+  return new Date(new Date(iso).toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+}
+
+function eventBADateStr(f) {
+  const d = toBADate(f._date);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getFiltered() {
+  const leagues = MS.league === 'all' ? Object.keys(LEAGUE_META) : [MS.league];
+  let all = [];
+  leagues.forEach(id => (MS.fixtures[id] || []).forEach(f => all.push(f)));
+  if (MS.teamQ) {
+    const q = MS.teamQ.toLowerCase();
+    all = all.filter(f => f._home.toLowerCase().includes(q) || f._away.toLowerCase().includes(q));
+  }
+  return all.sort((a, b) => new Date(a._date) - new Date(b._date));
+}
+
+function matchDaysInMonth(yr, mo) {
+  const days = new Set();
+  getFiltered().forEach(f => {
+    const d = toBADate(f._date);
+    if (d.getFullYear() === yr && d.getMonth() === mo) days.add(d.getDate());
+  });
+  return days;
+}
+
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function currentLang() { return document.querySelector('.lang-btn.active')?.textContent === 'ES' ? 'es' : 'en'; }
+
+function renderMC() {
+  const { calYear, calMonth, selDate } = MS;
+  const isES    = currentLang() === 'es';
+  const months  = isES ? MONTHS_ES : MONTHS_EN;
+  document.getElementById('mc-month-label').textContent = months[calMonth] + ' ' + calYear;
+  const hasDays     = matchDaysInMonth(calYear, calMonth);
+  const startDay    = (new Date(calYear, calMonth, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+  const today       = new Date();
+  const grid        = document.getElementById('mc-grid');
+  grid.innerHTML    = '';
+  for (let i = startDay-1; i >= 0; i--) { const el = document.createElement('div'); el.className='mc-day mc-other'; el.textContent=daysInPrev-i; grid.appendChild(el); }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const el  = document.createElement('div'); el.className = 'mc-day';
+    const iso = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if (hasDays.has(d)) el.classList.add('mc-has');
+    if (selDate === iso) el.classList.add('mc-sel');
+    if (today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d) el.classList.add('mc-today');
+    el.textContent = d;
+    el.onclick = () => toggleDateSel(iso);
+    grid.appendChild(el);
+  }
+  const trailing = 7 - ((startDay + daysInMonth) % 7 || 7);
+  for (let d = 1; d <= trailing; d++) { const el = document.createElement('div'); el.className='mc-day mc-other'; el.textContent=d; grid.appendChild(el); }
+
+  const titleEl = document.getElementById('match-list-title');
+  if (MS.selDate) {
+    const sd = new Date(MS.selDate + 'T12:00:00');
+    const dn = isES ? ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    titleEl.textContent = `${dn[sd.getDay()]} ${sd.getDate()} ${months[sd.getMonth()]}`;
+  } else {
+    titleEl.textContent = months[calMonth] + ' ' + calYear;
+  }
+  const cb = document.getElementById('mc-clear-btn');
+  if (cb) cb.style.display = MS.selDate ? 'block' : 'none';
+}
+
+function toggleDateSel(iso) { MS.selDate = MS.selDate===iso ? null : iso; renderMC(); renderMatchList(); }
+function clearDateSel()      { MS.selDate = null; renderMC(); renderMatchList(); }
+function mcChangeMonth(dir) {
+  MS.calMonth += dir;
+  if (MS.calMonth > 11) { MS.calMonth=0; MS.calYear++; }
+  if (MS.calMonth < 0)  { MS.calMonth=11; MS.calYear--; }
+  renderMC(); renderMatchList();
+}
+function setLeague(id, btn) {
+  MS.league = id;
+  document.querySelectorAll('.t-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderMC(); renderMatchList();
+}
+function setTeamFilter(val) { MS.teamQ = val; renderMC(); renderMatchList(); }
+
+function teamInitials(name) {
+  return (name || '?').split(' ').filter(w => w.length > 2).map(w => w[0]).join('').slice(0,3).toUpperCase() || '?';
+}
+
+function renderMatchList() {
+  if (MS.loading) return;
+  const isES    = currentLang() === 'es';
+  const months  = isES ? MONTHS_ES : MONTHS_EN;
+  const content = document.getElementById('match-content');
+  if (!content) return;
+
+  let fixtures = getFiltered();
+
+  if (MS.selDate) {
+    fixtures = fixtures.filter(f => eventBADateStr(f) === MS.selDate);
+  } else {
+    fixtures = fixtures.filter(f => {
+      const d = toBADate(f._date);
+      return d.getFullYear() === MS.calYear && d.getMonth() === MS.calMonth;
+    });
+  }
+
+  const countEl = document.getElementById('match-count');
+  if (countEl) countEl.textContent = fixtures.length
+    ? `${fixtures.length} ${isES ? (fixtures.length===1?'partido':'partidos') : (fixtures.length===1?'match':'matches')}`
+    : '';
+
+  if (!fixtures.length) {
+    content.innerHTML = `<div class="matches-empty">${isES ? 'Sin partidos en Buenos Aires para este período.' : 'No matches in Buenos Aires for this period.'}</div>`;
+    return;
+  }
+
+  const byLeague = {};
+  fixtures.forEach(f => { if (!byLeague[f._lid]) byLeague[f._lid]=[]; byLeague[f._lid].push(f); });
+
+  const dn       = isES ? ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const bookText = isES ? 'Reservar experiencia' : 'Book experience';
+  let html = '';
+
+  Object.entries(byLeague).forEach(([lid, matches]) => {
+    const lm = LEAGUE_META[lid] || { name: lid, nameEs: lid };
+    html += `<div class="matches-group"><div class="mg-label">${isES ? lm.nameEs : lm.name}</div>`;
+
+    matches.forEach(f => {
+      const dt       = toBADate(f._date);
+      const time     = new Date(f._date).toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'America/Argentina/Buenos_Aires' });
+      const dateTag  = `${dn[dt.getDay()]} ${dt.getDate()} ${months[dt.getMonth()]}`;
+      const vShort   = f._venue.length > 24 ? f._venue.slice(0,22)+'…' : f._venue;
+      const isLive   = f._state === 'in';
+      const isPost   = f._state === 'post' || f._completed;
+      const score    = `${f._homeScore || '0'} – ${f._awayScore || '0'}`;
+      const timeDisp = isPost ? score : isLive
+        ? `<span style="color:#E8593C;font-size:13px;font-weight:500">LIVE</span>`
+        : time;
+
+      const hLogo = f._homeLogo ? `<img src="${f._homeLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._home)}</span>`;
+      const aLogo = f._awayLogo ? `<img src="${f._awayLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._away)}</span>`;
+
+      html += `<div class="match-card">
+        <div class="match-team home"><div class="match-logo">${hLogo}</div><div class="match-tname">${f._home}</div></div>
+        <div class="match-mid">
+          <div class="match-vs">vs</div>
+          <div class="match-time">${timeDisp}</div>
+          <div class="match-date-tag">${dateTag}</div>
+          ${vShort ? `<span class="match-venue-pill">${vShort}</span>` : ''}
+        </div>
+        <div class="match-team away"><div class="match-logo">${aLogo}</div><div class="match-tname">${f._away}</div></div>
+        ${!isPost ? `<div class="match-book-row"><a href="#contact" class="match-book-btn">${bookText}</a></div>` : ''}
+      </div>`;
+    });
+    html += '</div>';
+  });
+  content.innerHTML = html;
+}
+
 const T = {
   en: {
     'nav-cta-text':'Write me','hero-label':'Buenos Aires · Argentina','hero-line1':'Real Football.','hero-line2':'Real Passion.',
@@ -462,6 +866,8 @@ const T = {
     'exp-badge2':'Primera División','exp2-d':'El Monumental — biggest stadium in South America. 85,000 fans, world-record atmosphere.','exp2-det':'Multiple dates each month',
     'exp-badge3':'Primera División','exp3-d':'La Bombonera. The most iconic stadium in Argentina, with the loudest supporters in the country.','exp3-det':'Multiple dates each month',
     'exp-badge4':'Barrial','exp4-d':'Neighbourhood clubs, raw passion. No tourists — just the real Buenos Aires football culture.','exp4-det':"Every weekend — ask me what's on",
+    'match-sec-label':'Live schedule','match-sec-title':'Upcoming matches',
+    'tab-all':'All tournaments','match-loading-text':'Loading…','mc-legend-text':'Match day',
     'faq-label':'FAQ','faq-title':'Common questions',
     'faq1-q':'Is it safe?','faq1-a':"Yes. You're always in a group with an experienced bilingual guide. They handle all security checkpoints, entry, and the exit — you never figure anything out alone.",
     'faq2-q':'Do I need to speak Spanish?','faq2-a':"Not at all. Your bilingual guide handles everything and explains the history, the chants, and the context throughout the day.",
@@ -497,6 +903,8 @@ const T = {
     'exp-badge2':'Primera División','exp2-d':'El Monumental — el estadio más grande de Sudamérica. 85.000 hinchas, récord mundial.','exp2-det':'Varias fechas disponibles cada mes',
     'exp-badge3':'Primera División','exp3-d':'La Bombonera. El estadio más icónico de Argentina, con los hinchas más ruidosos del país.','exp3-det':'Varias fechas disponibles cada mes',
     'exp-badge4':'Liga barrial','exp4-d':'Clubes de barrio, pasión sin filtro. Sin turistas — la cultura futbolera real de Buenos Aires.','exp4-det':'Todos los fines de semana — preguntame',
+    'match-sec-label':'Calendario en vivo','match-sec-title':'Próximos partidos',
+    'tab-all':'Todos los torneos','match-loading-text':'Cargando partidos…','mc-legend-text':'Día de partido',
     'faq-label':'Preguntas','faq-title':'Preguntas frecuentes',
     'faq1-q':'¿Es seguro?','faq1-a':'Sí. Siempre van en grupo con un guía bilingüe experimentado. Él maneja todos los controles, la entrada y la salida — nunca tenés que resolver nada solo.',
     'faq2-q':'¿Necesito hablar español?','faq2-a':'Para nada. El guía se encarga de todo y te explica la historia, los cánticos y el contexto durante todo el día.',
@@ -591,6 +999,9 @@ function setLang(lang) {
     const el = document.getElementById(id);
     if (el) el.innerHTML = val;
   });
+  const ts = document.getElementById('team-search-input');
+  if (ts) ts.placeholder = lang==='es' ? 'Filtrar por equipo…' : 'Filter by team…';
+  renderMC(); renderMatchList();
 }
 </script>
 </body>
