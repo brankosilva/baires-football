@@ -262,6 +262,15 @@
     .form-row { grid-template-columns: 1fr; }
     .matches-inner { padding: 0 20px; }
     .matches-section { padding: 60px 0; }
+    .team-search { width: 100%; min-width: 0; }
+    .match-card { padding: 12px 14px; gap: 8px; }
+    .match-tname { font-size: 11px; }
+    .match-logo { width: 26px; height: 26px; }
+    .match-logo img { width: 22px; height: 22px; }
+    .match-time { font-size: 18px; }
+    .match-venue-pill { display: none; }
+    .match-book-btn { font-size: 11px; padding: 6px 13px; }
+    .section-title { margin-bottom: 32px; }
   }
 </style>
 </head>
@@ -639,6 +648,8 @@ const MS = {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
+  const todayBA = toBADate(new Date().toISOString());
+  MS.selDate = `${todayBA.getFullYear()}-${String(todayBA.getMonth()+1).padStart(2,'0')}-${String(todayBA.getDate()).padStart(2,'0')}`;
   renderMC(); renderMatchList();
   loadFixtures();
 });
@@ -772,6 +783,24 @@ function teamInitials(name) {
   return (name || '?').split(' ').filter(w => w.length > 2).map(w => w[0]).join('').slice(0,3).toUpperCase() || '?';
 }
 
+let _bookData = [];
+
+function bookMatch(idx) {
+  const m = _bookData[idx];
+  if (!m) return;
+  const d = toBADate(m.date);
+  const yr = d.getFullYear(), mo = d.getMonth(), day = d.getDate();
+  const iso = `${yr}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][mo];
+
+  document.getElementById('fdate').value = iso;
+  document.getElementById('fdate-display').value = `${day} ${monthName} ${yr}`;
+  calState.selected = iso; calState.year = yr; calState.month = mo;
+
+  document.getElementById('fteam').value = `${m.home} vs ${m.away}`;
+  document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+}
+
 function renderMatchList() {
   if (MS.loading) return;
   const isES    = currentLang() === 'es';
@@ -805,6 +834,7 @@ function renderMatchList() {
 
   const dn       = isES ? ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const bookText = isES ? 'Reservar experiencia' : 'Book experience';
+  _bookData = [];
   let html = '';
 
   Object.entries(byLeague).forEach(([lid, matches]) => {
@@ -826,6 +856,9 @@ function renderMatchList() {
       const hLogo = f._homeLogo ? `<img src="${f._homeLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._home)}</span>`;
       const aLogo = f._awayLogo ? `<img src="${f._awayLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._away)}</span>`;
 
+      const bookIdx = _bookData.length;
+      _bookData.push({ date: f._date, home: f._home, away: f._away });
+
       html += `<div class="match-card">
         <div class="match-team home"><div class="match-logo">${hLogo}</div><div class="match-tname">${f._home}</div></div>
         <div class="match-mid">
@@ -835,7 +868,7 @@ function renderMatchList() {
           ${vShort ? `<span class="match-venue-pill">${vShort}</span>` : ''}
         </div>
         <div class="match-team away"><div class="match-logo">${aLogo}</div><div class="match-tname">${f._away}</div></div>
-        ${!isPost ? `<div class="match-book-row"><a href="#contact" class="match-book-btn">${bookText}</a></div>` : ''}
+        ${!isPost ? `<div class="match-book-row"><button onclick="bookMatch(${bookIdx})" class="match-book-btn">${bookText}</button></div>` : ''}
       </div>`;
     });
     html += '</div>';
