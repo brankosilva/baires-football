@@ -721,16 +721,24 @@ const PIBE_PRODUCTS_URL = 'https://pibedebarrio.com/products.json?limit=250';
 const FX_EUR_USD_URL     = 'https://api.frankfurter.dev/v1/latest?from=EUR&to=USD';
 /* Excludes multi-day trips, tours, and other non single-match products */
 const PRICE_EXCLUDE_RE = /wagon|trip|tour|magazine|guide|waitlist|matchpack|weekend|copa argentina|ascenso|private/i;
-/* Ambiguous teams with more than one matching product: force which one prices the card */
-const PRICE_OVERRIDES = { 'boca juniors': 250 };
+/* Short, generic words that don't identify a club — ignored when matching
+   an opponent name against a variant title (e.g. "de", "club") */
+const NAME_STOPWORDS = new Set(['de','del','la','los','las','y','club','atletico','deportivo']);
 
 function normTeam(s) {
   return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
+/* Distinctive words from a team name (e.g. "Central Córdoba (Santiago del
+   Estero)" -> ["central","cordoba","santiago","estero"]) used to spot that
+   team mentioned inside an abbreviated Shopify variant title. */
+function teamTokens(name) {
+  return normTeam(name).split(' ').filter(w => w.length >= 4 && !NAME_STOPWORDS.has(w));
+}
+
 async function loadShopifyPrices() {
-  const ckey = 'pdb_products_v3';
+  const ckey = 'pdb_products_v4';
   const cached = sessionStorage.getItem(ckey);
   if (cached) { MS.products = JSON.parse(cached); return; }
   try {
@@ -740,10 +748,11 @@ async function loadShopifyPrices() {
       .filter(p => !PRICE_EXCLUDE_RE.test(p.title))
       .map(p => ({
         title: p.title,
-        price: parseFloat(p.variants?.[0]?.price) || null,
-        available: (p.variants || []).some(v => v.available),
+        variants: (p.variants || [])
+          .map(v => ({ title: v.title, price: parseFloat(v.price) || null, available: !!v.available }))
+          .filter(v => v.price),
       }))
-      .filter(p => p.price);
+      .filter(p => p.variants.length);
     MS.products = products;
     sessionStorage.setItem(ckey, JSON.stringify(products));
   } catch (err) { MS.products = []; }
@@ -766,22 +775,35 @@ async function loadPricing() {
   renderMatchList();
 }
 
-/* Cheapest matching single-match ticket price for a team, distinguishing
-   "on sale" from "sold out" (product exists but no stock) from "not offered"
-   (no matching product at all) — returns null / {price, available} */
-function priceForTeam(team) {
-  const nt = normTeam(team);
+/* Price for a specific fixture (home team's product, opponent's exact
+   variant), distinguishing "on sale" from "sold out" (that date's variant
+   exists but has no stock) from "not offered" — returns null / {price, available}.
+   Pibe de Barrio sells per-date variants (one per upcoming opponent), each
+   with its own price and stock, so a team-level price isn't enough: the
+   Sep 9th Estudiantes-Corinthians variant can be sold out while Estudiantes'
+   other dates are still available. We match the opponent's name against the
+   variant title to find that exact date instead of assuming variant #1. */
+function priceForFixture(home, away) {
+  const nt = normTeam(home);
   if (!nt) return null;
-  if (PRICE_OVERRIDES[nt] != null) return { price: PRICE_OVERRIDES[nt], available: true };
+  /* Team-specific products are titled "{Team} game @ {Stadium}" — require
+     the team name to lead the title so e.g. "Independiente" doesn't match
+     an unrelated product that just mentions it mid-title (Independiente
+     Medellín, Independiente Rivadavia, etc.) */
+  const products = (MS.products || []).filter(p => normTeam(p.title).startsWith(nt));
+  if (!products.length) return null;
+
+  const tokens = teamTokens(away);
   let minAvail = null, minSoldOut = null;
-  (MS.products || []).forEach(p => {
-    /* Team-specific products are titled "{Team} game @ {Stadium}" — require
-       the team name to lead the title so e.g. "Independiente" doesn't match
-       an unrelated product that just mentions it mid-title (Independiente
-       Medellín, Independiente Rivadavia, etc.) */
-    if (!normTeam(p.title).startsWith(nt)) return;
-    if (p.available) { if (minAvail === null || p.price < minAvail) minAvail = p.price; }
-    else             { if (minSoldOut === null || p.price < minSoldOut) minSoldOut = p.price; }
+  products.forEach(p => {
+    p.variants.forEach(v => {
+      const matchesOpponent = tokens.length
+        ? tokens.some(tok => normTeam(v.title).includes(tok))
+        : p.variants.length === 1;
+      if (!matchesOpponent) return;
+      if (v.available) { if (minAvail === null || v.price < minAvail) minAvail = v.price; }
+      else              { if (minSoldOut === null || v.price < minSoldOut) minSoldOut = v.price; }
+    });
   });
   if (minAvail !== null)   return { price: minAvail,   available: true };
   if (minSoldOut !== null) return { price: minSoldOut, available: false };
@@ -963,7 +985,7 @@ function renderMatchList() {
       const hLogo = f._homeLogo ? `<img src="${f._homeLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._home)}</span>`;
       const aLogo = f._awayLogo ? `<img src="${f._awayLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._away)}</span>`;
 
-      const priceInfo = priceForTeam(f._home);
+      const priceInfo = priceForFixture(f._home, f._away);
       const bookIdx = _bookData.length;
       _bookData.push({ date: f._date, home: f._home, away: f._away, priceEur: priceInfo?.available ? priceInfo.price : null });
 
