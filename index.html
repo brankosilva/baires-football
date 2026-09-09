@@ -230,9 +230,11 @@
   .match-time { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.04em; color: var(--cream); line-height: 1; }
   .match-date-tag { font-size: 10px; color: rgba(245,240,232,0.3); letter-spacing: 0.04em; white-space: nowrap; }
   .match-venue-pill { font-size: 10px; color: rgba(245,240,232,0.32); background: rgba(255,255,255,0.04); padding: 3px 9px; border-radius: 20px; white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; display: block; }
-  .match-book-row { grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 4px; }
+  .match-book-row { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 4px; }
   .match-book-btn { background: var(--accent); color: var(--white); border: none; border-radius: 30px; padding: 7px 16px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: none; transition: background 0.2s, transform 0.15s; display: inline-block; }
   .match-book-btn:hover { background: #d04830; transform: translateY(-1px); }
+  .match-price { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--cream); }
+  .match-price-usd { font-weight: 400; color: rgba(245,240,232,0.4); margin-left: 4px; }
 
   .matches-loading { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 60px 0; }
   .spinner { width: 28px; height: 28px; border: 2px solid rgba(255,255,255,0.09); border-top-color: var(--green-light); border-radius: 50%; animation: spin 0.7s linear infinite; }
@@ -664,6 +666,7 @@ const MS = {
   fixtures: {}, loading: false,
   calYear: new Date().getFullYear(), calMonth: new Date().getMonth(),
   selDate: null, league: 'all', teamQ: '',
+  products: [], fxUsdPerEur: null,
 };
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -671,6 +674,7 @@ window.addEventListener('DOMContentLoaded', () => {
   MS.selDate = `${todayBA.getFullYear()}-${String(todayBA.getMonth()+1).padStart(2,'0')}-${String(todayBA.getDate()).padStart(2,'0')}`;
   renderMC(); renderMatchList();
   loadFixtures();
+  loadPricing();
 });
 
 async function loadFixtures() {
@@ -707,6 +711,78 @@ async function fetchLeague(slug, from, to) {
 function showMatchLoading(show) {
   document.getElementById('match-loading').style.display = show ? 'flex'  : 'none';
   document.getElementById('match-content').style.display = show ? 'none'  : 'block';
+}
+
+/* ============================================================
+   PRICING — live from Pibe de Barrio's Shopify catalog + EUR/USD FX
+============================================================ */
+const PIBE_PRODUCTS_URL = 'https://pibedebarrio.com/products.json?limit=250';
+const FX_EUR_USD_URL     = 'https://api.frankfurter.dev/v1/latest?from=EUR&to=USD';
+/* Excludes multi-day trips, tours, and other non single-match products */
+const PRICE_EXCLUDE_RE = /wagon|trip|tour|magazine|guide|waitlist|matchpack|weekend|copa argentina|ascenso|private/i;
+/* Ambiguous teams with more than one matching product: force which one prices the card */
+const PRICE_OVERRIDES = { 'boca juniors': 250 };
+
+function normTeam(s) {
+  return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+async function loadShopifyPrices() {
+  const ckey = 'pdb_products_v2';
+  const cached = sessionStorage.getItem(ckey);
+  if (cached) { MS.products = JSON.parse(cached); return; }
+  try {
+    const res = await fetch(PIBE_PRODUCTS_URL);
+    const json = await res.json();
+    const products = (json.products || [])
+      .filter(p => !PRICE_EXCLUDE_RE.test(p.title) && (p.variants || []).some(v => v.available))
+      .map(p => ({ title: p.title, price: parseFloat(p.variants[0].price) || null }))
+      .filter(p => p.price);
+    MS.products = products;
+    sessionStorage.setItem(ckey, JSON.stringify(products));
+  } catch (err) { MS.products = []; }
+}
+
+async function loadFxRate() {
+  const ckey = 'fx_eur_usd_v1';
+  const cached = sessionStorage.getItem(ckey);
+  if (cached) { MS.fxUsdPerEur = parseFloat(cached); return; }
+  try {
+    const res  = await fetch(FX_EUR_USD_URL);
+    const json = await res.json();
+    const rate = json.rates && json.rates.USD;
+    if (rate) { MS.fxUsdPerEur = rate; sessionStorage.setItem(ckey, String(rate)); }
+  } catch (err) { /* no FX available, EUR-only display */ }
+}
+
+async function loadPricing() {
+  await Promise.all([loadShopifyPrices(), loadFxRate()]);
+  renderMatchList();
+}
+
+/* Cheapest matching single-match ticket price for a team, or an override */
+function priceForTeam(team) {
+  const nt = normTeam(team);
+  if (!nt) return null;
+  if (PRICE_OVERRIDES[nt] != null) return PRICE_OVERRIDES[nt];
+  let min = null;
+  (MS.products || []).forEach(p => {
+    /* Team-specific products are titled "{Team} game @ {Stadium}" — require
+       the team name to lead the title so e.g. "Independiente" doesn't match
+       an unrelated product that just mentions it mid-title (Independiente
+       Medellín, Independiente Rivadavia, etc.) */
+    if (!normTeam(p.title).startsWith(nt)) return;
+    if (min === null || p.price < min) min = p.price;
+  });
+  return min;
+}
+
+function formatPrice(eur) {
+  if (eur == null) return '';
+  let html = `€${Math.round(eur)}`;
+  if (MS.fxUsdPerEur) html += ` <span class="match-price-usd">· ${Math.round(eur * MS.fxUsdPerEur)} USD</span>`;
+  return html;
 }
 
 /* Convert UTC ISO date to Buenos Aires local Date object */
@@ -803,6 +879,7 @@ function teamInitials(name) {
 }
 
 let _bookData = [];
+let _bookPriceEur = null;
 
 function bookMatch(idx) {
   const m = _bookData[idx];
@@ -817,6 +894,7 @@ function bookMatch(idx) {
   calState.selected = iso; calState.year = yr; calState.month = mo;
 
   document.getElementById('fteam').value = `${m.home} vs ${m.away}`;
+  _bookPriceEur = m.priceEur || null;
   document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -875,8 +953,9 @@ function renderMatchList() {
       const hLogo = f._homeLogo ? `<img src="${f._homeLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._home)}</span>`;
       const aLogo = f._awayLogo ? `<img src="${f._awayLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._away)}</span>`;
 
+      const priceEur = priceForTeam(f._home);
       const bookIdx = _bookData.length;
-      _bookData.push({ date: f._date, home: f._home, away: f._away });
+      _bookData.push({ date: f._date, home: f._home, away: f._away, priceEur });
 
       html += `<div class="match-card">
         <div class="match-team home"><div class="match-logo">${hLogo}</div><div class="match-tname">${f._home}</div></div>
@@ -887,7 +966,10 @@ function renderMatchList() {
           ${vShort ? `<span class="match-venue-pill">${vShort}</span>` : ''}
         </div>
         <div class="match-team away"><div class="match-logo">${aLogo}</div><div class="match-tname">${f._away}</div></div>
-        ${!isPost ? `<div class="match-book-row"><button onclick="bookMatch(${bookIdx})" class="match-book-btn">${bookText}</button></div>` : ''}
+        ${!isPost ? `<div class="match-book-row">
+          <span class="match-price">${formatPrice(priceEur)}</span>
+          <button onclick="bookMatch(${bookIdx})" class="match-book-btn">${bookText}</button>
+        </div>` : ''}
       </div>`;
     });
     html += '</div>';
@@ -1038,9 +1120,13 @@ function submitBooking(e) {
   const date  = document.getElementById('fdate-display').value || '—';
   const isES  = document.querySelector('.lang-btn.active').textContent === 'ES';
 
+  const priceLine = _bookPriceEur
+    ? `\n${isES ? 'Precio' : 'Price'}: ${formatPrice(_bookPriceEur).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()}`
+    : '';
+
   const msg = isES
-    ? `Hola! Me gustaría ir a un partido.\n\nNombre: ${name}\nEmail: ${email}\nTeléfono: ${phone || '—'}\nEquipo: ${team || '—'}\nFecha del partido: ${date}`
-    : `Hi! I'd like to go to a match.\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || '—'}\nTeam: ${team || '—'}\nMatch date: ${date}`;
+    ? `Hola! Me gustaría ir a un partido.\n\nNombre: ${name}\nEmail: ${email}\nTeléfono: ${phone || '—'}\nEquipo: ${team || '—'}\nFecha del partido: ${date}${priceLine}`
+    : `Hi! I'd like to go to a match.\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || '—'}\nTeam: ${team || '—'}\nMatch date: ${date}${priceLine}`;
 
   window.open('https://wa.me/5491173735757?text=' + encodeURIComponent(msg), '_blank');
 }
