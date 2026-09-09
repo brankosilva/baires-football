@@ -235,6 +235,7 @@
   .match-book-btn:hover { background: #d04830; transform: translateY(-1px); }
   .match-price { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--cream); }
   .match-price-usd { font-weight: 400; color: rgba(245,240,232,0.4); margin-left: 4px; }
+  .match-price-soldout { color: rgba(245,240,232,0.32); font-style: italic; font-weight: 400; }
 
   .matches-loading { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 60px 0; }
   .spinner { width: 28px; height: 28px; border: 2px solid rgba(255,255,255,0.09); border-top-color: var(--green-light); border-radius: 50%; animation: spin 0.7s linear infinite; }
@@ -729,15 +730,19 @@ function normTeam(s) {
 }
 
 async function loadShopifyPrices() {
-  const ckey = 'pdb_products_v2';
+  const ckey = 'pdb_products_v3';
   const cached = sessionStorage.getItem(ckey);
   if (cached) { MS.products = JSON.parse(cached); return; }
   try {
     const res = await fetch(PIBE_PRODUCTS_URL);
     const json = await res.json();
     const products = (json.products || [])
-      .filter(p => !PRICE_EXCLUDE_RE.test(p.title) && (p.variants || []).some(v => v.available))
-      .map(p => ({ title: p.title, price: parseFloat(p.variants[0].price) || null }))
+      .filter(p => !PRICE_EXCLUDE_RE.test(p.title))
+      .map(p => ({
+        title: p.title,
+        price: parseFloat(p.variants?.[0]?.price) || null,
+        available: (p.variants || []).some(v => v.available),
+      }))
       .filter(p => p.price);
     MS.products = products;
     sessionStorage.setItem(ckey, JSON.stringify(products));
@@ -761,21 +766,26 @@ async function loadPricing() {
   renderMatchList();
 }
 
-/* Cheapest matching single-match ticket price for a team, or an override */
+/* Cheapest matching single-match ticket price for a team, distinguishing
+   "on sale" from "sold out" (product exists but no stock) from "not offered"
+   (no matching product at all) — returns null / {price, available} */
 function priceForTeam(team) {
   const nt = normTeam(team);
   if (!nt) return null;
-  if (PRICE_OVERRIDES[nt] != null) return PRICE_OVERRIDES[nt];
-  let min = null;
+  if (PRICE_OVERRIDES[nt] != null) return { price: PRICE_OVERRIDES[nt], available: true };
+  let minAvail = null, minSoldOut = null;
   (MS.products || []).forEach(p => {
     /* Team-specific products are titled "{Team} game @ {Stadium}" — require
        the team name to lead the title so e.g. "Independiente" doesn't match
        an unrelated product that just mentions it mid-title (Independiente
        Medellín, Independiente Rivadavia, etc.) */
     if (!normTeam(p.title).startsWith(nt)) return;
-    if (min === null || p.price < min) min = p.price;
+    if (p.available) { if (minAvail === null || p.price < minAvail) minAvail = p.price; }
+    else             { if (minSoldOut === null || p.price < minSoldOut) minSoldOut = p.price; }
   });
-  return min;
+  if (minAvail !== null)   return { price: minAvail,   available: true };
+  if (minSoldOut !== null) return { price: minSoldOut, available: false };
+  return null;
 }
 
 function formatPrice(eur) {
@@ -953,9 +963,14 @@ function renderMatchList() {
       const hLogo = f._homeLogo ? `<img src="${f._homeLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._home)}</span>`;
       const aLogo = f._awayLogo ? `<img src="${f._awayLogo}" alt="" loading="lazy">` : `<span style="font-size:9px;font-weight:600;color:rgba(245,240,232,0.55)">${teamInitials(f._away)}</span>`;
 
-      const priceEur = priceForTeam(f._home);
+      const priceInfo = priceForTeam(f._home);
       const bookIdx = _bookData.length;
-      _bookData.push({ date: f._date, home: f._home, away: f._away, priceEur });
+      _bookData.push({ date: f._date, home: f._home, away: f._away, priceEur: priceInfo?.available ? priceInfo.price : null });
+
+      const priceHtml = !priceInfo ? '' : priceInfo.available
+        ? `<span class="match-price">${formatPrice(priceInfo.price)}</span>`
+        : `<span class="match-price match-price-soldout">${isES ? 'Agotado' : 'Sold out'}</span>`;
+      const showBook = !isPost && priceInfo && priceInfo.available;
 
       html += `<div class="match-card">
         <div class="match-team home"><div class="match-logo">${hLogo}</div><div class="match-tname">${f._home}</div></div>
@@ -966,9 +981,9 @@ function renderMatchList() {
           ${vShort ? `<span class="match-venue-pill">${vShort}</span>` : ''}
         </div>
         <div class="match-team away"><div class="match-logo">${aLogo}</div><div class="match-tname">${f._away}</div></div>
-        ${!isPost ? `<div class="match-book-row">
-          <span class="match-price">${formatPrice(priceEur)}</span>
-          <button onclick="bookMatch(${bookIdx})" class="match-book-btn">${bookText}</button>
+        ${(priceHtml || showBook) ? `<div class="match-book-row">
+          ${priceHtml}
+          ${showBook ? `<button onclick="bookMatch(${bookIdx})" class="match-book-btn">${bookText}</button>` : ''}
         </div>` : ''}
       </div>`;
     });
