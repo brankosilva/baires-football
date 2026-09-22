@@ -680,25 +680,32 @@ window.addEventListener('DOMContentLoaded', () => {
 
 async function loadFixtures() {
   MS.loading = true; showMatchLoading(true);
-  const now  = new Date();
-  const from = now.toISOString().slice(0, 10).replace(/-/g, '');
-  const end  = new Date(now); end.setMonth(end.getMonth() + 3);
-  const to   = end.toISOString().slice(0, 10).replace(/-/g, '');
-  await Promise.all(Object.keys(LEAGUE_META).map(slug => fetchLeague(slug, from, to)));
+  const now = new Date();
+  /* ESPN's scoreboard endpoint stopped accepting the "dates=FROM-TO" range
+     query (started returning 400 on it) — query month by month instead,
+     each as "dates=YYYYMM", which it still accepts. */
+  const months = [];
+  for (let i = 0; i <= 3; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    months.push(`${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  await Promise.all(Object.keys(LEAGUE_META).map(slug => fetchLeague(slug, months)));
   MS.loading = false; showMatchLoading(false);
   renderMC(); renderMatchList();
 }
 
-async function fetchLeague(slug, from, to) {
-  const ckey = `espn_${slug}_${from}`;
+async function fetchLeague(slug, months) {
+  const ckey = `espn_${slug}_${months.join('-')}`;
   const cached = sessionStorage.getItem(ckey);
   if (cached) { MS.fixtures[slug] = JSON.parse(cached); return; }
   try {
-    const url  = `${ESPN}/${slug}/scoreboard?dates=${from}-${to}&limit=200`;
-    const res  = await fetch(url);
-    const json = await res.json();
     const isDom = LEAGUE_META[slug].domestic;
-    const filtered = (json.events || [])
+    const monthEvents = await Promise.all(months.map(async m => {
+      const res  = await fetch(`${ESPN}/${slug}/scoreboard?dates=${m}&limit=200`);
+      const json = await res.json();
+      return json.events || [];
+    }));
+    const filtered = monthEvents.flat()
       .filter(e => {
         const comp = e.competitions?.[0];
         return comp && isBAVenue(comp.venue, isDom);
