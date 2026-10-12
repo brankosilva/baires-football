@@ -8,6 +8,7 @@
    so the alert and the website always agree. Prices are always fetched live. */
 
 import { writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 const TZ = 'America/Argentina/Buenos_Aires';
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer';
@@ -92,6 +93,7 @@ async function loadFixtures(from, to) {
         fixtures.push({
           league: meta.name, date: new Date(e.date),
           home: home?.team?.displayName || '—', away: away?.team?.displayName || '—',
+          homeLogo: home?.team?.logo || '', awayLogo: away?.team?.logo || '',
           venue: comp.venue?.fullName || '',
         });
       }
@@ -134,6 +136,19 @@ function includeLines(includes) {
   return { es, en };
 }
 
+/* Conditions that live in the product page text: minimum group size, ID
+   requirement and where the group meets. Read live, like the Includes list. */
+function parseMeta(html) {
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/&amp;nbsp;|&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
+  const min = text.match(/minimum of (\d+) guests/i);
+  const meet = text.match(/Our group will meet ([^.]*)\./i);
+  return {
+    minGuests: min ? +min[1] : null,
+    needsId: /national photo id/i.test(text),
+    meeting: meet ? meet[1].trim() : null,
+  };
+}
+
 async function loadProducts() {
   const json = await getJson(PIBE_PRODUCTS_URL);
   return (json.products || [])
@@ -141,6 +156,7 @@ async function loadProducts() {
     .map(p => ({
       title: p.title,
       includes: parseIncludes(p.body_html || ''),
+      meta: parseMeta(p.body_html || ''),
       variants: (p.variants || [])
         .map(v => ({ title: v.title, price: parseFloat(v.price) || null, available: !!v.available }))
         .filter(v => v.price),
@@ -152,7 +168,7 @@ async function loadProducts() {
    plus that product's "Includes" list */
 function variantsForFixture(products, home, away) {
   const nt = normTeam(home);
-  const out = { variants: [], includes: [] };
+  const out = { variants: [], includes: [], meta: {} };
   if (!nt) return out;
   const tokens = teamTokens(away);
   for (const p of products.filter(p => normTeam(p.title).startsWith(nt))) {
@@ -160,7 +176,7 @@ function variantsForFixture(products, home, away) {
       const matches = tokens.length
         ? tokens.some(tok => normTeam(v.title).includes(tok))
         : p.variants.length === 1;
-      if (matches) { out.variants.push(v); if (!out.includes.length) out.includes = p.includes; }
+      if (matches) { out.variants.push(v); if (!out.includes.length) { out.includes = p.includes; out.meta = p.meta; } }
     }
   }
   return out;
@@ -177,7 +193,7 @@ const variantLabel = (v, lang) => {
   return raw;
 };
 
-function copyFor(f, cheapest, soldOutOthers, includes, fx) {
+function copyFor(f, cheapest, soldOutOthers, includes, meta, fx) {
   const inc = includeLines(includes);
   const hasList = inc.es.length > 0;
   const isSeated = /seated/i.test(cheapest.title);
@@ -193,6 +209,11 @@ function copyFor(f, cheapest, soldOutOthers, includes, fx) {
   const soldEn = soldOutOthers.length ? `\n(${soldOutOthers.map(v => variantLabel(v, 'en')).join(', ')}: sold out.)` : '';
   const listEs = hasList ? inc.es.join('\n') : '(completar a mano)';
   const listEn = hasList ? inc.en.join('\n') : '(fill in by hand)';
+  const condEs = [meta?.needsId && '🪪 Llevá tu documento de identidad con foto (original, no copia ni captura).',
+                  meta?.minGuests && `⚠️ La salida se hace con un mínimo de ${meta.minGuests} personas.`].filter(Boolean).join('\n');
+  const condEn = [meta?.needsId && '🪪 Bring your photo ID (original, not a copy or screenshot).',
+                  meta?.minGuests && `⚠️ The trip goes ahead with a minimum of ${meta.minGuests} guests.`].filter(Boolean).join('\n');
+  const meetNote = meta?.meeting ? `\n> 📍 Punto de encuentro (de la ficha, en inglés): _our group will meet ${meta.meeting}_ — sumalo al copy.` : '';
   return `${warn}\`\`\`
 ⚽ ${f.home.toUpperCase()} vs ${f.away.toUpperCase()}
 🏆 ${f.league}
@@ -200,7 +221,7 @@ function copyFor(f, cheapest, soldOutOthers, includes, fx) {
 🏟️ ${f.venue}, Buenos Aires
 
 ✅ INCLUYE:
-${listEs}
+${listEs}${condEs ? '\n\n' + condEs : ''}
 
 💶 ${price}${soldEs}
 
@@ -213,12 +234,12 @@ ${listEs}
 🏟️ ${f.venue}, Buenos Aires
 
 ✅ INCLUDES:
-${listEn}
+${listEn}${condEn ? '\n\n' + condEn : ''}
 
 💶 ${price}${soldEn}
 
 📲 Book now: ${SITE_URL}
-\`\`\``;
+\`\`\`${meetNote}`;
 }
 
 async function main() {
@@ -232,9 +253,9 @@ async function main() {
 
   const onSale = [], soldOut = [];
   for (const f of fixtures) {
-    const { variants, includes } = variantsForFixture(products, f.home, f.away);
+    const { variants, includes, meta } = variantsForFixture(products, f.home, f.away);
     const avail = variants.filter(v => v.available).sort((a, b) => a.price - b.price);
-    if (avail.length) onSale.push({ f, variants, includes, cheapest: avail[0] });
+    if (avail.length) onSale.push({ f, variants, includes, meta, cheapest: avail[0] });
     else if (variants.length) soldOut.push({ f, variants });
   }
   const notOffered = fixtures.length - onSale.length - soldOut.length;
@@ -253,9 +274,9 @@ async function main() {
       md += `| **${f.home} vs ${f.away}** | ${f.league} | ${when} | ${f.venue} | **${priceLine(cheapest.price, fx)}** | ${cheapest.title.split(' / ').pop()} |\n`;
     }
     md += '\n## 📋 Copy para WhatsApp\n\n';
-    for (const { f, variants, includes, cheapest } of onSale) {
+    for (const { f, variants, includes, meta, cheapest } of onSale) {
       const soldOthers = variants.filter(v => !v.available);
-      md += `<details><summary><b>${f.home} vs ${f.away}</b></summary>\n\n${copyFor(f, cheapest, soldOthers, includes, fx)}\n\n</details>\n\n`;
+      md += `<details><summary><b>${f.home} vs ${f.away}</b></summary>\n\n${copyFor(f, cheapest, soldOthers, includes, meta, fx)}\n\n</details>\n\n`;
     }
   }
   if (soldOut.length) {
@@ -271,4 +292,9 @@ async function main() {
   console.error(`Fixtures: ${fixtures.length} · on sale: ${onSale.length} · sold out: ${soldOut.length} · not offered: ${notOffered}`);
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+export { loadFixtures, loadProducts, variantsForFixture, includeLines, priceLine, fmtDate, getJson, FX_URL, SITE_URL, TZ };
+
+/* Only run when executed directly (the helpers above are reused by other scripts) */
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(err => { console.error(err); process.exit(1); });
+}
