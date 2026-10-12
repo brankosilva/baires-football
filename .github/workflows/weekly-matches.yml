@@ -1,0 +1,35 @@
+name: Weekly matches alert
+
+on:
+  schedule:
+    # Mondays 11:00 UTC = 08:00 in Buenos Aires (UTC-3, no DST)
+    - cron: '0 11 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build the weekly report
+        run: node scripts/weekly-matches.mjs report.md
+      - name: Open the issue (GitHub emails it)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "@${{ github.repository_owner }}"
+            echo
+            cat report.md
+          } > body.md
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "⚽ Partidos de la semana — $(date -u +%Y-%m-%d)" \
+            --body-file body.md
