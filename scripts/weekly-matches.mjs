@@ -112,6 +112,12 @@ function parseIncludes(html) {
   const items = [];
   const m = html.match(/Includes<\/[^>]+>(?:\s*<\/[^>]+>)*\s*<ul>([\s\S]*?)<\/ul>/i);
   if (m) for (const li of m[1].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)) { const t = strip(li[1]); if (t) items.push(t); }
+  if (!items.length) {
+    /* Fallback for pages whose markup differs (e.g. River's): take every list
+       item between the "Includes" heading and "What you need". */
+    const block = html.match(/Includes[\s\S]*?What you need/i);
+    if (block) for (const li of block[0].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)) { const t = strip(li[1]); if (t) items.push(t); }
+  }
   const text = strip(html);
   if (/includes public transport/i.test(text) && !items.some(i => /transport/i.test(i))) items.push('Public transportation included');
   if (/includes return transport/i.test(text) && !items.some(i => /return transport/i.test(i))) items.push('Return transport with the group');
