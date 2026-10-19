@@ -95,6 +95,7 @@ async function loadFixtures(from, to) {
           home: home?.team?.displayName || '—', away: away?.team?.displayName || '—',
           homeLogo: home?.team?.logo || '', awayLogo: away?.team?.logo || '',
           venue: comp.venue?.fullName || '',
+          city: comp.venue?.address?.city || '',
         });
       }
     }
@@ -218,7 +219,7 @@ function copyFor(f, cheapest, soldOutOthers, includes, meta, fx) {
 ⚽ ${f.home.toUpperCase()} vs ${f.away.toUpperCase()}
 🏆 ${f.league}
 📅 ${dayEs} · ${timeEs} hs
-🏟️ ${f.venue}, Buenos Aires
+🏟️ ${f.venue}, ${f.city || "Buenos Aires"}
 
 ✅ INCLUYE:
 ${listEs}${condEs ? '\n\n' + condEs : ''}
@@ -231,7 +232,7 @@ ${listEs}${condEs ? '\n\n' + condEs : ''}
 ⚽ ${f.home} vs ${f.away}
 🏆 ${f.league}
 📅 ${dayEn} · ${timeEn}
-🏟️ ${f.venue}, Buenos Aires
+🏟️ ${f.venue}, ${f.city || "Buenos Aires"}
 
 ✅ INCLUDES:
 ${listEn}${condEn ? '\n\n' + condEn : ''}

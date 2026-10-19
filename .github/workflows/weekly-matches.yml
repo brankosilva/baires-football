@@ -2,8 +2,12 @@ name: Weekly matches alert
 
 on:
   schedule:
-    # Mondays 11:00 UTC = 08:00 in Buenos Aires (UTC-3, no DST)
+    # Mondays 11:00 UTC = 08:00 in Buenos Aires (UTC-3, no DST).
+    # GitHub sometimes delays or drops scheduled runs, so retry later the same
+    # day; the "already posted today" check below prevents duplicate issues.
     - cron: '0 11 * * 1'
+    - cron: '30 12 * * 1'
+    - cron: '0 14 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -14,13 +18,32 @@ jobs:
   alert:
     runs-on: ubuntu-latest
     steps:
+      - name: Skip if today's report was already posted
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="⚽ Partidos de la semana — $(date -u +%Y-%m-%d)"
+          COUNT=$(gh issue list --repo "${{ github.repository }}" --state all \
+            --search "\"$TITLE\" in:title" --json number --jq 'length')
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -gt 0 ] && [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "Already posted today, skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v4
+        if: steps.check.outputs.skip != 'true'
       - uses: actions/setup-node@v4
+        if: steps.check.outputs.skip != 'true'
         with:
           node-version: 20
       - name: Build the weekly report
+        if: steps.check.outputs.skip != 'true'
         run: node scripts/weekly-matches.mjs report.md
       - name: Open the issue (GitHub emails it)
+        if: steps.check.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -31,5 +54,5 @@ jobs:
           } > body.md
           gh issue create \
             --repo "${{ github.repository }}" \
-            --title "⚽ Partidos de la semana — $(date -u +%Y-%m-%d)" \
+            --title "${{ steps.check.outputs.title }}" \
             --body-file body.md
