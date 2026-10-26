@@ -797,23 +797,45 @@ function priceForFixture(home, away) {
      the team name to lead the title so e.g. "Independiente" doesn't match
      an unrelated product that just mentions it mid-title (Independiente
      Medellín, Independiente Rivadavia, etc.) */
-  const products = (MS.products || []).filter(p => normTeam(p.title).startsWith(nt));
+  const tokens = teamTokens(away);
+  /* Big derbies (the Superclásico) have their own product, titled
+     "Superclásico: Boca Juniors vs River Plate 2026", so also accept a product
+     that starts with "Superclásico" and names both clubs. Multi-day tours
+     ("PW Superclásico…") don't start with it and are already excluded. */
+  const products = (MS.products || []).filter(p => {
+    const t = normTeam(p.title);
+    return t.startsWith(nt)
+      || (t.startsWith('superclasico') && t.includes(nt) && tokens.some(tok => t.includes(tok)));
+  });
   if (!products.length) return null;
 
-  const tokens = teamTokens(away);
-  let minAvail = null, minSoldOut = null;
+  let minAvail = null, minSoldOut = null, instPrice = null;
   products.forEach(p => {
+    /* Some tickets are paid in two installments, each its own variant
+       ("… (Standing) - 1ST PAYMENT" and "… - 2ND PAYMENT"). The real ticket
+       price is the sum, not either installment on its own. */
+    const first  = p.variants.find(v => /1st payment/i.test(v.title) && tokens.some(tok => normTeam(v.title).includes(tok)));
+    const second = first && p.variants.find(v => /2nd payment/i.test(v.title) && v.title.replace(/2nd payment/i, '') === first.title.replace(/1st payment/i, ''));
     p.variants.forEach(v => {
       const matchesOpponent = tokens.length
         ? tokens.some(tok => normTeam(v.title).includes(tok))
         : p.variants.length === 1;
       if (!matchesOpponent) return;
-      if (v.available) { if (minAvail === null || v.price < minAvail) minAvail = v.price; }
-      else              { if (minSoldOut === null || v.price < minSoldOut) minSoldOut = v.price; }
+      let price = v.price, available = v.available;
+      if (/1st payment|2nd payment/i.test(v.title)) {
+        if (!first || !second) return;           /* can't price an installment without its pair */
+        if (v !== first) return;                 /* count the pair once */
+        price = first.price + second.price;
+        available = first.available;             /* 2nd payment is released later; stock is the 1st */
+        instPrice = price;
+      }
+      if (available) { if (minAvail === null || price < minAvail) minAvail = price; }
+      else            { if (minSoldOut === null || price < minSoldOut) minSoldOut = price; }
     });
   });
-  if (minAvail !== null)   return { price: minAvail,   available: true };
-  if (minSoldOut !== null) return { price: minSoldOut, available: false };
+  /* "installments" only when the price shown is the two-payment standing ticket */
+  if (minAvail !== null)   return { price: minAvail,   available: true,  installments: minAvail === instPrice };
+  if (minSoldOut !== null) return { price: minSoldOut, available: false, installments: minSoldOut === instPrice };
   return null;
 }
 
@@ -997,7 +1019,7 @@ function renderMatchList() {
       _bookData.push({ date: f._date, home: f._home, away: f._away, priceEur: priceInfo?.available ? priceInfo.price : null });
 
       const priceHtml = !priceInfo ? '' : priceInfo.available
-        ? `<span class="match-price">${formatPrice(priceInfo.price)}</span>`
+        ? `<span class="match-price">${formatPrice(priceInfo.price)}${priceInfo.installments ? ` <span class="match-price-usd">· ${isES ? 'en 2 cuotas' : 'in 2 payments'}</span>` : ''}</span>`
         : `<span class="match-price match-price-soldout">${isES ? 'Agotado' : 'Sold out'}</span>`;
       const showBook = !isPost && priceInfo && priceInfo.available;
 
