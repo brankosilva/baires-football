@@ -744,8 +744,19 @@ function teamTokens(name) {
   return normTeam(name).split(' ').filter(w => w.length >= 4 && !NAME_STOPWORDS.has(w));
 }
 
+/* Products sold in two installments state the final standing price in their
+   description ("The total final price … is €840"). That text is what we
+   promote, so it wins over the sum of the installment variants (which can lag
+   behind if a variant price isn't updated). null when the text isn't there. */
+function parseInstallmentTotal(html) {
+  const text = (html || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&amp;nbsp;/g, ' ').replace(/\s+/g, ' ');
+  const m = text.match(/total final price[^€\d]*€\s*(\d[\d.,]*)/i);
+  const n = m ? parseFloat(m[1].replace(/[.,](?=\d{3}\b)/g, '').replace(',', '.')) : NaN;
+  return n > 0 ? n : null;
+}
+
 async function loadShopifyPrices() {
-  const ckey = 'pdb_products_v4';
+  const ckey = 'pdb_products_v5';
   const cached = sessionStorage.getItem(ckey);
   if (cached) { MS.products = JSON.parse(cached); return; }
   try {
@@ -755,6 +766,7 @@ async function loadShopifyPrices() {
       .filter(p => !PRICE_EXCLUDE_RE.test(p.title))
       .map(p => ({
         title: p.title,
+        installmentTotal: parseInstallmentTotal(p.body_html),
         variants: (p.variants || [])
           .map(v => ({ title: v.title, price: parseFloat(v.price) || null, available: !!v.available }))
           .filter(v => v.price),
@@ -825,7 +837,7 @@ function priceForFixture(home, away) {
       if (/1st payment|2nd payment/i.test(v.title)) {
         if (!first || !second) return;           /* can't price an installment without its pair */
         if (v !== first) return;                 /* count the pair once */
-        price = first.price + second.price;
+        price = p.installmentTotal || (first.price + second.price);
         available = first.available;             /* 2nd payment is released later; stock is the 1st */
         instPrice = price;
       }
